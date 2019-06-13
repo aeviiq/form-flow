@@ -1,0 +1,31 @@
+{
+    "name": "aeviiq/form-flow",
+    "type": "library",
+    "description": "Form Flow Component",
+    "keywords": [
+        "form-flow",
+        "flow",
+        "form"
+    ],
+    "homepage": "https://github.com/aeviiq/form-flow",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aeviiq Form Flow contributors",
+            "homepage": "https://github.com/aeviiq/form-flow/graphs/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Aeviiq\\FormFlow\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aeviiq\\Tests\\FormFlow\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.2"
+    }
+}
