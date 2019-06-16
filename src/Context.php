@@ -9,6 +9,16 @@ class Context
      */
     private $currentStepNumber = 1;
 
+    /**
+     * @var object
+     */
+    private $data;
+
+    public function __construct(object $data)
+    {
+        $this->data = $data;
+    }
+
     public function getCurrentStepNumer(): int
     {
         return $this->currentStepNumber;
@@ -22,5 +32,10 @@ class Context
     public function transitionBackwards(): void
     {
         --$this->currentStepNumber;
+    }
+
+    public function getData(): object
+    {
+        return $this->data;
     }
 }
