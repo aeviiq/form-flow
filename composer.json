@@ -27,6 +27,7 @@
     },
     "require": {
         "php": "^7.2",
-        "aeviiq/collection": "^2.0"
+        "aeviiq/collection": "^2.0",
+        "aeviiq/storage-manager": "^1.0"
     }
 }
