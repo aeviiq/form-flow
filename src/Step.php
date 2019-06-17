@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-interface Step
+interface Step extends Completable, Skippable, \Serializable
 {
     public function getNumber(): int;
 

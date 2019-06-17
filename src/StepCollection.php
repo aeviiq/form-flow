@@ -52,8 +52,13 @@ final class StepCollection extends ObjectCollection
 
     public function filterStepsGreaterThanOrEqualToNumber(int $number): StepCollection
     {
+        return $this->filterStepsGreaterThanNumber($number - 1);
+    }
+
+    public function filterStepsGreaterThanNumber(int $number): StepCollection
+    {
         return $this->filter(static function (Step $step) use ($number): bool {
-            return $step->getNumber() >= $number;
+            return $step->getNumber() > $number;
         });
     }
 
