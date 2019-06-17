@@ -2,14 +2,14 @@
 
 namespace Aeviiq\FormFlow;
 
-use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 
 final class Definition
 {
     /**
-     * @var Context
+     * @var string
      */
-    private $context;
+    private $name;
 
     /**
      * @var StepCollection
@@ -17,25 +17,28 @@ final class Definition
     private $steps;
 
     /**
-     * @var string
+     * @var string The instance that the data for this definition is expected to be.
      */
-    private $name;
+    private $expectedDataInstance;
 
-    public function __construct(Context $context, StepCollection $steps, string $name)
+    public function __construct(string $name, StepCollection $steps, string $expectedDataInstance)
     {
-        $this->context = $context;
-        $this->steps = $steps;
+        if ('' === $name) {
+            throw new InvalidArgumentException(\sprintf('The definition "$name" cannot be empty.'));
+        }
+
+        if (!\class_exists($expectedDataInstance) && !\interface_exists($expectedDataInstance)) {
+            throw new InvalidArgumentException(\sprintf('The "$expectedDataInstance" must be an existing class or interface.'));
+        }
+
         $this->name = $name;
+        $this->expectedDataInstance = $expectedDataInstance;
+        $this->steps = $steps;
     }
 
     public function __toString(): string
     {
         return $this->getName();
-    }
-
-    public function getContext(): Context
-    {
-        return $this->context;
     }
 
     public function getSteps(): StepCollection
@@ -48,56 +51,8 @@ final class Definition
         return $this->name;
     }
 
-    public function getFirstStep(): Step
+    public function getExpectedDataInstance(): string
     {
-        return $this->steps->first();
-    }
-
-    public function getLastStep(): Step
-    {
-        return $this->steps->last();
-    }
-
-    public function getCurrentStep(): Step
-    {
-        return $this->steps->getStepByNumber($this->context->getCurrentStepNumer());
-    }
-
-    public function getNextStep(): Step
-    {
-        if (!$this->hasNextStep()) {
-            throw new LogicException(\sprintf('The flow does not have any more next steps.'));
-        }
-
-        return $this->steps->getStepByNumber($this->context->getCurrentStepNumer() + 1);
-    }
-
-    public function hasNextStep(): bool
-    {
-        return $this->steps->hasStepWithNumber($this->context->getCurrentStepNumer() + 1);
-    }
-
-    public function getPreviousStep(): Step
-    {
-        if (!$this->hasPreviousStep()) {
-            throw new LogicException(\sprintf('The flow does not have any more previous steps.'));
-        }
-
-        return $this->steps->getStepByNumber($this->context->getCurrentStepNumer() - 1);
-    }
-
-    public function hasPreviousStep(): bool
-    {
-        return $this->steps->hasStepWithNumber($this->context->getCurrentStepNumer() - 1);
-    }
-
-    public function getStepsRemaining(): StepCollection
-    {
-        return $this->steps->filterStepsGreaterThanOrEqualToNumber($this->context->getCurrentStepNumer());
-    }
-
-    public function getStepsDone(): StepCollection
-    {
-        return $this->steps->filterStepsSmallerThanNumber($this->context->getCurrentStepNumer());
+        return $this->expectedDataInstance;
     }
 }
