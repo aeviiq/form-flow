@@ -1,8 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Aeviiq\FormFlow;
+namespace Aeviiq\FormFlow\Step;
 
-interface Step extends Completable, Skippable, \Serializable
+use Aeviiq\FormFlow\Completable;
+use Aeviiq\FormFlow\Skippable;
+
+interface Step extends Completable, Skippable, Equatable, \Serializable
 {
     public function getNumber(): int;
 

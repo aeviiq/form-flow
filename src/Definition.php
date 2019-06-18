@@ -3,6 +3,7 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
+use Aeviiq\FormFlow\Step\StepCollection;
 
 final class Definition
 {
@@ -19,21 +20,25 @@ final class Definition
     /**
      * @var string The instance that the data for this definition is expected to be.
      */
-    private $expectedDataInstance;
+    private $expectedInstance;
 
-    public function __construct(string $name, StepCollection $steps, string $expectedDataInstance)
+    public function __construct(string $name, StepCollection $steps, string $expectedInstance)
     {
         if ('' === $name) {
             throw new InvalidArgumentException(\sprintf('The definition "$name" cannot be empty.'));
         }
 
-        if (!\class_exists($expectedDataInstance) && !\interface_exists($expectedDataInstance)) {
-            throw new InvalidArgumentException(\sprintf('The "$expectedDataInstance" must be an existing class or interface.'));
+        if (!\class_exists($expectedInstance) && !\interface_exists($expectedInstance)) {
+            throw new InvalidArgumentException(\sprintf('The "$expectedInstance" must be an existing class or interface.'));
+        }
+
+        if ($steps->count() < 2) {
+            throw new InvalidArgumentException(\sprintf('The "$steps" must contain at least 2 steps.'));
         }
 
         $this->name = $name;
-        $this->expectedDataInstance = $expectedDataInstance;
         $this->steps = $steps;
+        $this->expectedInstance = $expectedInstance;
     }
 
     public function __toString(): string
@@ -51,8 +56,8 @@ final class Definition
         return $this->name;
     }
 
-    public function getExpectedDataInstance(): string
+    public function getExpectedInstance(): string
     {
-        return $this->expectedDataInstance;
+        return $this->expectedInstance;
     }
 }

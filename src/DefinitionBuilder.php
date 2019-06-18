@@ -2,7 +2,9 @@
 
 namespace Aeviiq\FormFlow;
 
-use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Step\PersistentStep;
+use Aeviiq\FormFlow\Step\Step;
+use Aeviiq\FormFlow\Step\StepCollection;
 
 final class DefinitionBuilder
 {
@@ -12,18 +14,17 @@ final class DefinitionBuilder
     private $steps = [];
 
     /**
-     * @var string|null
+     * @var string
      */
-    private $name;
+    private $name = '';
 
     /**
-     * @var string|null
+     * @var string
      */
-    private $expectedDataInstance;
+    private $expectedDataInstance = '';
 
     public function build(): Definition
     {
-        $this->validateState();
         $definition = new Definition($this->name, new StepCollection($this->steps), $this->expectedDataInstance);
         $this->reset();
 
@@ -50,23 +51,8 @@ final class DefinitionBuilder
     public function reset(): void
     {
         $this->steps = [];
-        $this->instanceOfChecker = null;
-        $this->name = null;
-    }
-
-    private function validateState(): void
-    {
-        if (empty($this->steps)) {
-            throw new LogicException(\sprintf('Unable to build a definition without steps.'));
-        }
-
-        if (null === $this->expectedDataInstance) {
-            throw new LogicException(\sprintf('Unable to build a definition without an expected data instance.'));
-        }
-
-        if (null === $this->name || '' === $this->name) {
-            throw new LogicException(\sprintf('Unable to build a definition without a valid name.'));
-        }
+        $this->instanceOfChecker = '';
+        $this->name = '';
     }
 
     private function getStepCount(): int

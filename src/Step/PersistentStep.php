@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Aeviiq\FormFlow;
+namespace Aeviiq\FormFlow\Step;
 
 final class PersistentStep implements Step
 {
@@ -96,6 +96,31 @@ final class PersistentStep implements Step
     public function skip(): void
     {
         $this->skipped = true;
+    }
+
+    public function isEqualTo(Step $step): bool
+    {
+        if ($this->getNumber() !== $step->getNumber()) {
+            return false;
+        }
+
+        if ($this->getFormType() !== $step->getFormType()) {
+            return false;
+        }
+
+        if ($this->getLabel() !== $step->getLabel()) {
+            return false;
+        }
+
+        if ($this->getNextLabel() !== $step->getNextLabel()) {
+            return false;
+        }
+
+        if ($this->getPreviousLabel() !== $step->getPreviousLabel()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function serialize(): string
