@@ -2,40 +2,44 @@
 
 namespace Aeviiq\FormFlow;
 
-class Context
-{
-    /**
-     * @var int
-     */
-    private $currentStepNumber = 1;
+use Aeviiq\FormFlow\Step\StepCollection;
 
+class Context implements FlowContext
+{
     /**
      * @var object
      */
     private $data;
 
-    public function __construct(object $data)
+    /**
+     * @var StepCollection
+     */
+    private $steps;
+
+    /**
+     * @var int
+     */
+    private $currentStepNumber = 1;
+
+    public function __construct(object $data, StepCollection $steps)
     {
         $this->data = $data;
+        $this->steps = $steps;
     }
 
-    public function getCurrentStepNumer(): int
+    public function getCurrentStepNumber(): int
     {
+        // TODO revise this, could also get this information based on the steps..
         return $this->currentStepNumber;
-    }
-
-    public function transitionForwards(): void
-    {
-        ++$this->currentStepNumber;
-    }
-
-    public function transitionBackwards(): void
-    {
-        --$this->currentStepNumber;
     }
 
     public function getData(): object
     {
         return $this->data;
+    }
+
+    public function getSteps(): StepCollection
+    {
+        return $this->steps;
     }
 }
