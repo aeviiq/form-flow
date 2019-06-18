@@ -1,23 +1,22 @@
 <?php declare(strict_types = 1);
 
-namespace Aeviiq\FormFlow;
+namespace Aeviiq\FormFlow\Step;
 
 use Aeviiq\Collection\ObjectCollection;
+use Aeviiq\FormFlow\Completable;
 use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Skippable;
 
 /**
  * @method \ArrayIterator|Step[] getIterator
- * @method Step first
- * @method Step last
+ * @method Step|null first
+ * @method Step|null last
  */
 final class StepCollection extends ObjectCollection
 {
     public function __construct(array $elements)
     {
         parent::__construct($elements);
-        if ($this->count() < 2) {
-            throw new LogicException(\sprintf('A step collection must contain at least 2 steps.'));
-        }
 
         $numbers = [];
         foreach ($this as $step) {
@@ -42,6 +41,36 @@ final class StepCollection extends ObjectCollection
             return $step->getNumber() === $number;
         });
     }
+
+    public function filterCompletedSteps(): StepCollection
+    {
+        return $this->filter(static function (Completable $step) {
+            return $step->isCompleted();
+        });
+    }
+
+    public function filterIncompleteSteps(): StepCollection
+    {
+        return $this->filter(static function (Completable $step) {
+            return !$step->isCompleted();
+        });
+    }
+
+    public function filterSkippedSteps(): StepCollection
+    {
+        return $this->filter(static function (Skippable $step) {
+            return $step->isSkipped();
+        });
+    }
+
+    public function filterUnskippedSteps(): StepCollection
+    {
+        return $this->filter(static function (Skippable $step) {
+            return !$step->isSkipped();
+        });
+    }
+
+    // TODO revise if the ones below are still needed.
 
     public function filterStepsSmallerThanNumber(int $number): StepCollection
     {
