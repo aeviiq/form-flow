@@ -28,7 +28,6 @@ interface Flow extends Startable, Blockable, Completable, FlowContext
 
     public function getData(): object;
 
-    // StepCapable
     public function getCurrentStepNumber(): int;
 
     public function getSteps(): StepCollection;

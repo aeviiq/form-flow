@@ -4,7 +4,6 @@ namespace Aeviiq\FormFlow\Step;
 
 use Aeviiq\Collection\ObjectCollection;
 use Aeviiq\FormFlow\Completable;
-use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Skippable;
 
 /**
@@ -14,20 +13,6 @@ use Aeviiq\FormFlow\Skippable;
  */
 final class StepCollection extends ObjectCollection
 {
-    public function __construct(array $elements)
-    {
-        parent::__construct($elements);
-
-        $numbers = [];
-        foreach ($this as $step) {
-            $numbers[] = $step->getNumber();
-        }
-
-        if (\count(\array_unique($numbers)) !== $this->count()) {
-            throw new LogicException(\sprintf('Each step must have a unique number.'));
-        }
-    }
-
     public function getStepByNumber(int $number): Step
     {
         return $this->getOneBy(static function (Step $step) use ($number): bool {
