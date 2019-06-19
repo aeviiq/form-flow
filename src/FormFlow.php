@@ -6,6 +6,9 @@ use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
+use Aeviiq\StorageManager\StorageManager;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\FormFactoryInterface;
 
 final class FormFlow implements Flow
 {
@@ -19,10 +22,37 @@ final class FormFlow implements Flow
      */
     private $context;
 
+    /**
+     * @var bool
+     */
+    private $blocked = false;
+
+    /**
+     * @var StorageManager
+     */
+    private $storageManager;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var FormFactoryInterface
+     */
+    private $formFactory;
+
     // TODO inject other dependencies (e.g. events, loading of data, etc.)
-    public function __construct(Definition $definition)
-    {
+    public function __construct(
+        StorageManager $storageManager,
+        EventDispatcherInterface $eventDispatcher,
+        FormFactoryInterface $formFactory,
+        Definition $definition
+    ) {
         $this->definition = $definition; // TODO maybe move to start or some other method..?
+        $this->storageManager = $storageManager;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->formFactory = $formFactory;
         $this->initialize();
     }
 
@@ -49,12 +79,12 @@ final class FormFlow implements Flow
 
     public function isBlocked(): bool
     {
-        // TODO: Implement isBlocked() method.
+        return $this->blocked;
     }
 
     public function block(): void
     {
-        // TODO: Implement block() method.
+        $this->blocked = true;
     }
 
     public function isCompleted(): bool
@@ -64,17 +94,31 @@ final class FormFlow implements Flow
 
     public function complete(): void
     {
+        $this->reset();
+
         // TODO exception if any step, other then the last one is not yet completed.
         // TODO: Implement complete() method.
     }
 
     public function canNext(): bool
     {
+        if ($this->isBlocked()) {
+            return false;
+        }
+
+        if ($this->getCurrentStep()->isSkipped()) {
+            return true;
+        }
+
+        // TODO check if the form is valid
         // TODO: Implement canNext() method.
     }
 
     public function next(): void
     {
+        if (!$this->canNext()) {
+            // Exception
+        }
         // TODO: Implement next() method.
     }
 
