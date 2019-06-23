@@ -4,6 +4,7 @@ namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Exception\UnexpectedValueException;
 use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Aeviiq\StorageManager\StorageManager;
@@ -12,20 +13,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 
 final class FormFlow implements Flow
 {
-    /**
-     * @var Definition
-     */
-    private $definition;
-
-    /**
-     * @var Context|null
-     */
-    private $context;
-
-    /**
-     * @var bool
-     */
-    private $blocked = false;
+    private static $storageKey = 'form_flow.storage.%s';
 
     /**
      * @var StorageManager
@@ -41,6 +29,21 @@ final class FormFlow implements Flow
      * @var FormFactoryInterface
      */
     private $formFactory;
+
+    /**
+     * @var Definition
+     */
+    private $definition;
+
+    /**
+     * @var Context|null
+     */
+    private $context;
+
+    /**
+     * @var bool
+     */
+    private $blocked = false;
 
     // TODO inject other dependencies (e.g. events, loading of data, etc.)
     public function __construct(
@@ -67,13 +70,7 @@ final class FormFlow implements Flow
             throw new LogicException(\sprintf('The flow is already started. In order to start it again, you need to reset() it.'));
         }
 
-        $expectedInstance = $this->definition->getExpectedInstance();
-        if (!($data instanceof $expectedInstance)) { // TODO to own method.
-            throw new InvalidArgumentException(\sprintf('The data must be an instanceof %s, %s given.', $expectedInstance, \get_class($data)));
-        }
-
-        $this->definition->getSteps();
-
+        $this->checkExpectedInstance($data);
         $this->context = new Context($data, $this->definition->getSteps());
     }
 
@@ -129,14 +126,18 @@ final class FormFlow implements Flow
 
     public function save(): void
     {
-        // TODO: Implement save() method.
+        if (!$this->isStarted()) {
+            throw new LogicException(\sprintf('Unable to save the flow without a context. Did you start the flow?'));
+        }
+
+        $this->storageManager->save($this->getStorageKey(), $this->getContext());
     }
 
     public function reset(): void
     {
         // TODO more reset functionality.
         $this->context = null;
-        // TODO: Implement reset() method.
+        $this->storageManager->remove($this->getStorageKey());
     }
 
     public function getData(): object
@@ -212,9 +213,31 @@ final class FormFlow implements Flow
         return $this->context;
     }
 
+    private function checkExpectedInstance(object $data): void
+    {
+        $expectedInstance = $this->definition->getExpectedInstance();
+        if (!($data instanceof $expectedInstance)) {
+            throw new InvalidArgumentException(\sprintf('The data must be an instanceof %s, %s given.', $expectedInstance, \get_class($data)));
+        }
+    }
+
+    private function getStorageKey(): string
+    {
+        return \sprintf(static::$storageKey, $this->definition->getName());
+    }
+
     private function initialize(): void
     {
-        // TODO initialize, load context, etc.
-        $this->context = null; // TODO load the context.
+        $key = $this->getStorageKey();
+        if (!$this->storageManager->has($key)) {
+            return;
+        }
+
+        $context = $this->storageManager->load($key);
+        if (!($context instanceof Context)) {
+            throw new UnexpectedValueException(\sprintf('The stored context is corrupted. This could be because it is changed by reference.'));
+        }
+
+        $this->context = $context;
     }
 }
