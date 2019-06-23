@@ -10,6 +10,7 @@ use Aeviiq\FormFlow\Step\StepCollection;
 use Aeviiq\StorageManager\StorageManager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 
 final class FormFlow implements Flow
 {
@@ -44,6 +45,11 @@ final class FormFlow implements Flow
      * @var bool
      */
     private $blocked = false;
+
+    /**
+     * @var FormInterface
+     */
+    private $form;
 
     // TODO inject other dependencies (e.g. events, loading of data, etc.)
     public function __construct(
@@ -143,6 +149,24 @@ final class FormFlow implements Flow
     public function getData(): object
     {
         return $this->getContext()->getData();
+    }
+
+    public function isFormValid(): bool
+    {
+        $form = $this->getForm();
+        return $form->isSubmitted() && $form->isValid();
+    }
+
+    public function getForm(): FormInterface
+    {
+        if (null === $this->form) {
+            $this->form = $this->formFactory->create(
+                $this->getCurrentStep()->getFormType(),
+                $this->getData()
+            );
+        }
+
+        return $this->form;
     }
 
     public function getCurrentStepNumber(): int
