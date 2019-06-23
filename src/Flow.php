@@ -4,6 +4,7 @@ namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
+use Symfony\Component\Form\FormInterface;
 
 interface Flow extends Startable, Blockable, Completable, FlowContext
 {
@@ -27,6 +28,10 @@ interface Flow extends Startable, Blockable, Completable, FlowContext
     public function reset(): void;
 
     public function getData(): object;
+
+    public function isFormValid(): bool;
+
+    public function getForm(): FormInterface;
 
     public function getCurrentStepNumber(): int;
 
