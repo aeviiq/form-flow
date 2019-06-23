@@ -28,7 +28,7 @@
     "require": {
         "php": "^7.2",
         "aeviiq/collection": "^1.0",
-        "aeviiq/storage-manager": "^1.0",
+        "aeviiq/storage-manager": "^1.0.1",
         "symfony/form": "^3.4|^4.3",
         "symfony/event-dispatcher": "^3.4|^4.3"
     }
