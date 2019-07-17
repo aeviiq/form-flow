@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-use Aeviiq\Collection\ObjectCollection;
+use Aeviiq\Collection\AbstractObjectCollection;
 use Aeviiq\FormFlow\Completable;
 use Aeviiq\FormFlow\Skippable;
 
@@ -11,7 +11,7 @@ use Aeviiq\FormFlow\Skippable;
  * @method Step|null first
  * @method Step|null last
  */
-final class StepCollection extends ObjectCollection
+final class StepCollection extends AbstractObjectCollection
 {
     public function getStepByNumber(int $number): Step
     {

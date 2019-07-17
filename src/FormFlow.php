@@ -7,7 +7,7 @@ use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\UnexpectedValueException;
 use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
-use Aeviiq\StorageManager\StorageManager;
+use Aeviiq\StorageManager\StorageManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -17,7 +17,7 @@ final class FormFlow implements Flow
     private static $storageKey = 'form_flow.storage.%s';
 
     /**
-     * @var StorageManager
+     * @var StorageManagerInterface
      */
     private $storageManager;
 
@@ -53,7 +53,7 @@ final class FormFlow implements Flow
 
     // TODO inject other dependencies (e.g. events, loading of data, etc.)
     public function __construct(
-        StorageManager $storageManager,
+        StorageManagerInterface $storageManager,
         EventDispatcherInterface $eventDispatcher,
         FormFactoryInterface $formFactory,
         Definition $definition
