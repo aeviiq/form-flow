@@ -30,6 +30,11 @@ final class Step implements StepInterface
     private $previousLabel;
 
     /**
+     * @var string|null
+     */
+    private $routeName;
+
+    /**
      * @var bool
      */
     private $completed = false;
@@ -44,13 +49,15 @@ final class Step implements StepInterface
         string $formType,
         string $label,
         string $nextLabel,
-        string $previousLabel
+        string $previousLabel,
+        ?string $routeName = null
     ) {
         $this->number = $number;
         $this->formType = $formType;
         $this->label = $label;
         $this->nextLabel = $nextLabel;
         $this->previousLabel = $previousLabel;
+        $this->routeName = $routeName;
     }
 
     public function getNumber(): int
@@ -76,6 +83,11 @@ final class Step implements StepInterface
     public function getPreviousLabel(): string
     {
         return $this->previousLabel;
+    }
+
+    public function getRouteName(): ?string
+    {
+        return $this->routeName;
     }
 
     public function isCompleted(): bool

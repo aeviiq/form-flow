@@ -16,4 +16,6 @@ interface StepInterface extends CompletableInterface, SkippableInterface, Equata
     public function getNextLabel(): string;
 
     public function getPreviousLabel(): string;
+
+    public function getRouteName(): ?string;
 }
