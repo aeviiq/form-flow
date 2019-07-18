@@ -51,7 +51,6 @@ final class FormFlow implements FormFlowInterface
      */
     private $form;
 
-    // TODO inject other dependencies (e.g. events, loading of data, etc.)
     public function __construct(
         StorageManagerInterface $storageManager,
         EventDispatcherInterface $eventDispatcher,
@@ -63,6 +62,11 @@ final class FormFlow implements FormFlowInterface
         $this->eventDispatcher = $eventDispatcher;
         $this->formFactory = $formFactory;
         $this->initialize();
+    }
+
+    public function getName(): string
+    {
+        return $this->definition->getName();
     }
 
     public function isStarted(): bool
@@ -133,7 +137,7 @@ final class FormFlow implements FormFlowInterface
     public function save(): void
     {
         if (!$this->isStarted()) {
-            throw new LogicException(\sprintf('Unable to save the flow without a context. Did you start the flow?'));
+            throw new LogicException(\sprintf('Unable to save the flow without a context. Did you start() the flow?'));
         }
 
         $this->storageManager->save($this->getStorageKey(), $this->getContext());

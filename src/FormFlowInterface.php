@@ -8,6 +8,8 @@ use Symfony\Component\Form\FormInterface;
 
 interface FormFlowInterface extends StartableInterface, BlockableInterface, CompletableInterface
 {
+    public function getName(): string;
+
     /**
      * @return bool Whether the flow is capable to go to the next step.
      */
