@@ -2,7 +2,6 @@
 
 namespace Aeviiq\FormFlow;
 
-use Aeviiq\FormFlow\Step\PersistentStep;
 use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
 
@@ -39,8 +38,9 @@ final class DefinitionBuilder
     public function addStep(string $formType, ?string $label = null, ?string $nextLabel = null, ?string $previousLabel = null): void
     {
         $number = $this->getStepCount();
+        // TODO check if it is a valid form type.
 
-        $this->steps[$number] = new PersistentStep($number, $formType, $label ?? 'Step', $nextLabel ?? 'Next', $previousLabel ?? 'Previous');
+        $this->steps[$number] = new Step($number, $formType, $label ?? 'Step', $nextLabel ?? 'Next', $previousLabel ?? 'Previous');
     }
 
     public function setRequiredInstanceOf(string $expectedDataInstance): void

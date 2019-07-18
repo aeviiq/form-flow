@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-interface Skippable
+interface SkippableInterface
 {
     public function isSkipped(): bool;
 

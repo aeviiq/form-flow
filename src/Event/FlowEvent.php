@@ -2,23 +2,23 @@
 
 namespace Aeviiq\FormFlow\Event;
 
-use Aeviiq\FormFlow\Flow;
-use Symfony\Component\EventDispatcher\Event;
+use Aeviiq\FormFlow\FormFlowInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 final class FlowEvent extends Event
 {
     /**
-     * @var Flow
+     * @var FormFlowInterface
      */
-    private $flow;
+    private $formFlow;
 
-    public function __construct(Flow $flow)
+    public function __construct(FormFlowInterface $formFlow)
     {
-        $this->flow = $flow;
+        $this->formFlow = $formFlow;
     }
 
-    public function getFlow(): Flow
+    public function getFormFlow(): FormFlowInterface
     {
-        return $this->flow;
+        return $this->formFlow;
     }
 }

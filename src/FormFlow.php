@@ -12,7 +12,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 
-final class FormFlow implements Flow
+final class FormFlow implements FormFlowInterface
 {
     private static $storageKey = 'form_flow.storage.%s';
 

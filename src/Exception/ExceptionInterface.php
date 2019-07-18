@@ -2,6 +2,6 @@
 
 namespace Aeviiq\FormFlow\Exception;
 
-interface Throwable extends \Throwable
+interface ExceptionInterface extends \Throwable
 {
 }

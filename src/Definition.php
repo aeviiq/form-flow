@@ -33,7 +33,7 @@ final class Definition
         }
 
         if ($steps->count() < 2) {
-            throw new InvalidArgumentException(\sprintf('The "$steps" must contain at least 2 steps.'));
+            throw new InvalidArgumentException(\sprintf('A flow must consist of at least 2 steps.'));
         }
 
         $this->name = $name;

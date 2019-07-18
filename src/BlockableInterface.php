@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-interface Blockable
+interface BlockableInterface
 {
     public function isBlocked(): bool;
 

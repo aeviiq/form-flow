@@ -2,6 +2,6 @@
 
 namespace Aeviiq\FormFlow\Exception;
 
-final class UnexpectedValueException extends \UnexpectedValueException implements Throwable
+final class UnexpectedValueException extends \UnexpectedValueException implements ExceptionInterface
 {
 }

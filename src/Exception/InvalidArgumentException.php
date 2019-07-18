@@ -2,6 +2,6 @@
 
 namespace Aeviiq\FormFlow\Exception;
 
-final class InvalidArgumentException extends \InvalidArgumentException implements Throwable
+final class InvalidArgumentException extends \InvalidArgumentException implements ExceptionInterface
 {
 }

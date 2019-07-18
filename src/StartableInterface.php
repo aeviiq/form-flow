@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-interface Startable
+interface StartableInterface
 {
     public function isStarted(): bool;
 

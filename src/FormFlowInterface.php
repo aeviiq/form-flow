@@ -6,7 +6,7 @@ use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Symfony\Component\Form\FormInterface;
 
-interface Flow extends Startable, Blockable, Completable, FlowContext
+interface FormFlowInterface extends StartableInterface, BlockableInterface, CompletableInterface
 {
     /**
      * @return bool Whether the flow is capable to go to the next step.

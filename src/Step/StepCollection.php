@@ -3,8 +3,8 @@
 namespace Aeviiq\FormFlow\Step;
 
 use Aeviiq\Collection\AbstractObjectCollection;
-use Aeviiq\FormFlow\Completable;
-use Aeviiq\FormFlow\Skippable;
+use Aeviiq\FormFlow\CompletableInterface;
+use Aeviiq\FormFlow\SkippableInterface;
 
 /**
  * @method \ArrayIterator|Step[] getIterator
@@ -29,28 +29,28 @@ final class StepCollection extends AbstractObjectCollection
 
     public function filterCompletedSteps(): StepCollection
     {
-        return $this->filter(static function (Completable $step) {
+        return $this->filter(static function (CompletableInterface $step) {
             return $step->isCompleted();
         });
     }
 
     public function filterIncompleteSteps(): StepCollection
     {
-        return $this->filter(static function (Completable $step) {
+        return $this->filter(static function (CompletableInterface $step) {
             return !$step->isCompleted();
         });
     }
 
     public function filterSkippedSteps(): StepCollection
     {
-        return $this->filter(static function (Skippable $step) {
+        return $this->filter(static function (SkippableInterface $step) {
             return $step->isSkipped();
         });
     }
 
     public function filterUnskippedSteps(): StepCollection
     {
-        return $this->filter(static function (Skippable $step) {
+        return $this->filter(static function (SkippableInterface $step) {
             return !$step->isSkipped();
         });
     }

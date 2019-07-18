@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-interface Completable
+interface CompletableInterface
 {
     public function isCompleted(): bool;
 

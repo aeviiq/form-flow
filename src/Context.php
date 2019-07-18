@@ -4,7 +4,7 @@ namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Step\StepCollection;
 
-class Context implements FlowContext
+class Context
 {
     /**
      * @var object

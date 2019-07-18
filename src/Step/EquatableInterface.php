@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-interface Equatable
+interface EquatableInterface
 {
     public function isEqualTo(Step $step): bool;
 }
