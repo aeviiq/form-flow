@@ -30,6 +30,7 @@
         "aeviiq/collection": "^2.0",
         "aeviiq/storage-manager": "^2.0",
         "symfony/form": "^4.3",
-        "symfony/event-dispatcher": "^4.3"
+        "symfony/event-dispatcher": "^4.3",
+        "aeviiq/factory": "^3.0"
     }
 }
