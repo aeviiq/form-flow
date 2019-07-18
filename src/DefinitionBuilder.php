@@ -35,12 +35,12 @@ final class DefinitionBuilder
         $this->name = $name;
     }
 
-    public function addStep(string $formType, ?string $label = null, ?string $nextLabel = null, ?string $previousLabel = null): void
+    public function addStep(string $formType, ?string $label = null, ?string $nextLabel = null, ?string $previousLabel = null, ?string $routeName = null): void
     {
         $number = $this->getStepCount();
         // TODO check if it is a valid form type.
 
-        $this->steps[$number] = new Step($number, $formType, $label ?? 'Step', $nextLabel ?? 'Next', $previousLabel ?? 'Previous');
+        $this->steps[$number] = new Step($number, $formType, $label ?? 'Step', $nextLabel ?? 'Next', $previousLabel ?? 'Previous', $routeName);
     }
 
     public function setRequiredInstanceOf(string $expectedDataInstance): void

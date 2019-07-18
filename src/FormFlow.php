@@ -117,8 +117,13 @@ final class FormFlow implements FormFlowInterface
             return true;
         }
 
-        // TODO check if the form is valid
-        // TODO: Implement canNext() method.
+        if (!$this->isFormValid()) {
+            return false;
+        }
+
+        // TODO checks for certain events?
+
+        return true;
     }
 
     public function next(): void
@@ -251,7 +256,7 @@ final class FormFlow implements FormFlowInterface
 
     private function getStorageKey(): string
     {
-        return \sprintf(static::$storageKey, $this->definition->getName());
+        return \sprintf(static::$storageKey, $this->getName());
     }
 
     private function initialize(): void
