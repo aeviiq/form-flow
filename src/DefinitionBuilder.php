@@ -51,7 +51,7 @@ final class DefinitionBuilder
     public function reset(): void
     {
         $this->steps = [];
-        $this->instanceOfChecker = '';
+        $this->expectedDataInstance = '';
         $this->name = '';
     }
 
