@@ -110,7 +110,7 @@ final class Step implements StepInterface
         $this->skipped = true;
     }
 
-    public function isEqualTo(Step $step): bool
+    public function isEqualTo(StepInterface $step): bool
     {
         if ($this->getNumber() !== $step->getNumber()) {
             return false;

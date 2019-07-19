@@ -6,7 +6,8 @@ use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Symfony\Component\Form\FormInterface;
 
-interface FormFlowInterface extends StartableInterface, BlockableInterface, CompletableInterface
+// TODO implement these interfaces.
+interface FormFlowInterface extends StartableInterface//, BlockableInterface, CompletableInterface
 {
     public function getName(): string;
 

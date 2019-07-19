@@ -4,5 +4,5 @@ namespace Aeviiq\FormFlow\Step;
 
 interface EquatableInterface
 {
-    public function isEqualTo(Step $step): bool;
+    public function isEqualTo(StepInterface $step): bool;
 }

@@ -41,10 +41,10 @@ final class FormFlow implements FormFlowInterface
      */
     private $context;
 
-    /**
-     * @var bool
-     */
-    private $blocked = false;
+//    /**
+//     * @var bool
+//     */
+//    private $blocked = false;
 
     /**
      * @var FormInterface
@@ -81,48 +81,34 @@ final class FormFlow implements FormFlowInterface
         }
 
         $this->checkExpectedInstance($data);
-        $this->context = new Context($data, $this->definition->getSteps());
+        $this->context = new Context($data);
     }
 
-    public function isBlocked(): bool
-    {
-        return $this->blocked;
-    }
+//    public function isBlocked(): bool
+//    {
+//        return $this->blocked;
+//    }
+//
+//    public function block(): void
+//    {
+//        $this->blocked = true;
+//    }
 
-    public function block(): void
-    {
-        $this->blocked = true;
-    }
-
-    public function isCompleted(): bool
-    {
-        return $this->getSteps()->filterIncompleteSteps()->isEmpty();
-    }
-
-    public function complete(): void
-    {
-        $this->reset();
-
-        // TODO exception if any step, other then the last one is not yet completed.
-        // TODO: Implement complete() method.
-    }
+//    public function isCompleted(): bool
+//    {
+//        return $this->getSteps()->filterIncompleteSteps()->isEmpty();
+//    }
+//
+//    public function complete(): void
+//    {
+//        $this->reset();
+//
+//        // TODO exception if any step, other then the last one is not yet completed.
+//        // TODO: Implement complete() method.
+//    }
 
     public function canNext(): bool
     {
-        if ($this->isBlocked()) {
-            return false;
-        }
-
-        if ($this->getCurrentStep()->isSkipped()) {
-            return true;
-        }
-
-        if (!$this->isFormValid()) {
-            return false;
-        }
-
-        // TODO checks for certain events?
-
         return true;
     }
 
@@ -185,7 +171,7 @@ final class FormFlow implements FormFlowInterface
 
     public function getSteps(): StepCollection
     {
-        return $this->getContext()->getSteps();
+        return $this->definition->getSteps();
     }
 
     public function getCurrentStep(): Step
