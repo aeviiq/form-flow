@@ -2,8 +2,10 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-// TODO implement these interfaces
-interface StepInterface extends EquatableInterface, \Serializable//, CompletableInterface, SkippableInterface
+use Aeviiq\FormFlow\CompletableInterface;
+use Aeviiq\FormFlow\SkippableInterface;
+
+interface StepInterface extends EquatableInterface, CompletableInterface, SkippableInterface
 {
     public function getNumber(): int;
 
@@ -14,6 +16,4 @@ interface StepInterface extends EquatableInterface, \Serializable//, Completable
     public function getNextLabel(): string;
 
     public function getPreviousLabel(): string;
-
-    public function getRouteName(): ?string;
 }
