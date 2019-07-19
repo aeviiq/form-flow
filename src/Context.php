@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-class Context
+class Context implements TransitionableInterface
 {
     /**
      * @var object
@@ -14,9 +14,20 @@ class Context
      */
     private $currentStepNumber = 1;
 
-    public function __construct(object $data)
+    /**
+     * @var int
+     */
+    private $totalNumberOfSteps;
+
+    public function __construct(object $data, int $totalNumberOfSteps)
     {
         $this->data = $data;
+        $this->totalNumberOfSteps = $totalNumberOfSteps;
+    }
+
+    public function getData(): object
+    {
+        return $this->data;
     }
 
     public function getCurrentStepNumber(): int
@@ -24,8 +35,32 @@ class Context
         return $this->currentStepNumber;
     }
 
-    public function getData(): object
+    public function getTotalStepCount(): int
     {
-        return $this->data;
+        return $this->totalNumberOfSteps;
+    }
+
+    public function transitionForwards(): void
+    {
+        if ($this->canTransitionForwards()) {
+            ++$this->currentStepNumber;
+        }
+    }
+
+    public function canTransitionForwards(): bool
+    {
+        return $this->getCurrentStepNumber() < $this->getTotalStepCount();
+    }
+
+    public function transitionBackwards(): void
+    {
+        if ($this->canTransitionBackwards()) {
+            --$this->currentStepNumber;
+        }
+    }
+
+    public function canTransitionBackwards(): bool
+    {
+        return $this->getCurrentStepNumber() > 1;
     }
 }
