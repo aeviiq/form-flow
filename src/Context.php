@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
-class Context implements TransitionableInterface
+class Context implements TransitionableInterface, \Serializable
 {
     /**
      * @var object
@@ -18,6 +18,11 @@ class Context implements TransitionableInterface
      * @var int
      */
     private $totalNumberOfSteps;
+
+    /**
+     * @var bool
+     */
+    private $transitioned = false;
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
@@ -44,6 +49,7 @@ class Context implements TransitionableInterface
     {
         if ($this->canTransitionForwards()) {
             ++$this->currentStepNumber;
+            $this->transitioned = true;
         }
     }
 
@@ -56,11 +62,41 @@ class Context implements TransitionableInterface
     {
         if ($this->canTransitionBackwards()) {
             --$this->currentStepNumber;
+            $this->transitioned = true;
         }
     }
 
     public function canTransitionBackwards(): bool
     {
         return $this->getCurrentStepNumber() > 1;
+    }
+
+    public function hasTransitioned(): bool
+    {
+        return $this->transitioned;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function serialize(): string
+    {
+        return \serialize([
+            $this->data,
+            $this->currentStepNumber,
+            $this->totalNumberOfSteps,
+        ]);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function unserialize($serialized): void
+    {
+        [
+            $this->data,
+            $this->currentStepNumber,
+            $this->totalNumberOfSteps,
+        ] = \unserialize($serialized);
     }
 }
