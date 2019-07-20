@@ -11,4 +11,6 @@ interface TransitionableInterface
     public function transitionBackwards(): void;
 
     public function canTransitionBackwards(): bool;
+
+    public function hasTransitioned(): bool;
 }
