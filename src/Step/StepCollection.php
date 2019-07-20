@@ -13,16 +13,16 @@ use Aeviiq\FormFlow\SkippableInterface;
  */
 final class StepCollection extends AbstractObjectCollection
 {
-    public function getStepByNumber(int $number): Step
+    public function getStepByNumber(int $number): StepInterface
     {
-        return $this->getOneBy(static function (Step $step) use ($number): bool {
+        return $this->getOneBy(static function (StepInterface $step) use ($number): bool {
             return $step->getNumber() === $number;
         });
     }
 
     public function hasStepWithNumber(int $number): bool
     {
-        return null !== $this->getOneOrNullBy(static function (Step $step) use ($number): bool {
+        return null !== $this->getOneOrNullBy(static function (StepInterface $step) use ($number): bool {
             return $step->getNumber() === $number;
         });
     }
@@ -55,11 +55,9 @@ final class StepCollection extends AbstractObjectCollection
         });
     }
 
-    // TODO revise if the ones below are still needed.
-
     public function filterStepsSmallerThanNumber(int $number): StepCollection
     {
-        return $this->filter(static function (Step $step) use ($number): bool {
+        return $this->filter(static function (StepInterface $step) use ($number): bool {
             return $step->getNumber() < $number;
         });
     }
@@ -71,13 +69,13 @@ final class StepCollection extends AbstractObjectCollection
 
     public function filterStepsGreaterThanNumber(int $number): StepCollection
     {
-        return $this->filter(static function (Step $step) use ($number): bool {
+        return $this->filter(static function (StepInterface $step) use ($number): bool {
             return $step->getNumber() > $number;
         });
     }
 
     protected function allowedInstance(): string
     {
-        return Step::class;
+        return StepInterface::class;
     }
 }

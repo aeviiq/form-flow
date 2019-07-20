@@ -2,33 +2,32 @@
 
 namespace Aeviiq\FormFlow;
 
-use Aeviiq\FormFlow\Step\Step;
 use Aeviiq\FormFlow\Step\StepCollection;
+use Aeviiq\FormFlow\Step\StepInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 // TODO implement these interfaces.
-interface FormFlowInterface extends StartableInterface//, BlockableInterface, CompletableInterface
+interface FormFlowInterface extends StartableInterface, TransitionableInterface, ResettableInterface, CompletableInterface//, BlockableInterface
 {
+    /**
+     * @return string The unique name of the form flow.
+     */
     public function getName(): string;
 
-    /**
-     * @return bool Whether the flow is capable to go to the next step.
-     */
-    public function canNext(): bool;
+    public function setRequestStack(RequestStack $requestStack): void;
 
     /**
-     * TODO this should throw an exception if $this->isBlocked() or if the form is not valid.
-     * @throws TODO set exceptions and their reason (for ALL inside this INTERFACE methods).
-     * @throws TODO set exceptions and their reason (for ALL inside this INTERFACE methods).
-     * @throws TODO set exceptions and their reason (for ALL inside this INTERFACE methods).
+     * @return string The input name which should have the desired transition value (@see TransitionEnum) as value.
      */
-    public function next(): void;
+    public function getTransitionKey(): string;
 
-    public function previous(): void;
+    /**
+     * @return bool Whether or not the requested transition was successful.
+     */
+    public function transition(): bool;
 
     public function save(): void;
-
-    public function reset(): void;
 
     public function getData(): object;
 
@@ -40,17 +39,17 @@ interface FormFlowInterface extends StartableInterface//, BlockableInterface, Co
 
     public function getSteps(): StepCollection;
 
-    public function getCurrentStep(): Step;
+    public function getCurrentStep(): StepInterface;
 
-    public function getNextStep(): Step;
+    public function getNextStep(): StepInterface;
 
     public function hasNextStep(): bool;
 
-    public function getPreviousStep(): Step;
+    public function getPreviousStep(): StepInterface;
 
     public function hasPreviousStep(): bool;
 
-    public function getFirstStep(): Step;
+    public function getFirstStep(): StepInterface;
 
-    public function getLastStep(): Step;
+    public function getLastStep(): StepInterface;
 }
