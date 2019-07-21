@@ -96,8 +96,13 @@ final class FormFlow implements FormFlowInterface
             throw new LogicException(\sprintf('The flow is already started. In order to start it again, you need to reset() it.'));
         }
 
+        if ($data instanceof Context) {
+            $context = $data;
+            $data = $context->getData();
+        }
+
         $this->checkExpectedInstance($data);
-        $this->context = new Context($data, $this->definition->getSteps()->count());
+        $this->context = $context ?? new Context($data, $this->definition->getSteps()->count());
     }
 
     /**
@@ -366,7 +371,7 @@ final class FormFlow implements FormFlowInterface
 
     private function isRequestedTransitionValid(): bool
     {
-        return TransitionEnum::isValid($this->getRequest()->request->get($this->getTransitionKey()));
+        return TransitionEnum::isValid($this->getRequestedTransitionFromRequest());
     }
 
     private function getTransition(): TransitionEnum
@@ -375,7 +380,12 @@ final class FormFlow implements FormFlowInterface
             throw new LogicException('Unable to determine the requested transition. Use the getTransitionKey() method to name your submit actions.');
         }
 
-        return new TransitionEnum($this->getRequest()->request->get($this->getTransitionKey()));
+        return new TransitionEnum($this->getRequestedTransitionFromRequest());
+    }
+
+    private function getRequestedTransitionFromRequest(): string
+    {
+        return $this->getRequest()->get($this->getTransitionKey(), '');
     }
 
     private function getRequest(): Request
