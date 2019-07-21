@@ -2,7 +2,9 @@
 
 namespace Aeviiq\FormFlow\Tests;
 
+use Aeviiq\FormFlow\Context;
 use Aeviiq\FormFlow\Definition;
+use Aeviiq\FormFlow\Enum\TransitionEnum;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\FormFlow;
 use Aeviiq\FormFlow\FormFlowInterface;
@@ -40,10 +42,7 @@ final class FormFlowTest extends TestCase
         $step1->method('getNumber')->willReturn(1);
         $step2 = $this->createMock(StepInterface::class);
         $step2->method('getNumber')->willReturn(2);
-        $mockedForm = $this->createMock(FormInterface::class);
-        $mockedForm->method('isSubmitted')->willReturn(true);
-        $mockedForm->method('isValid')->willReturn(true);
-        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+        $this->createdFormWillBeValid();
 
         $flow = $this->createStartedValidFormFlow($this->createDefinition([$step1, $step2]));
         $this->assertEquals(1, $flow->getCurrentStepNumber());
@@ -65,27 +64,24 @@ final class FormFlowTest extends TestCase
 
     public function testTransitionForwardsWhenNoMoreStepsAreLeft(): void
     {
-        $mockedForm = $this->createMock(FormInterface::class);
-        $mockedForm->method('isSubmitted')->willReturn(true);
-        $mockedForm->method('isValid')->willReturn(true);
-        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+        $this->createdFormWillBeValid();
 
         $flow = $this->createStartedValidFormFlowOnFinalStep();
         $flow->transitionForwards();
         $this->assertTrue($flow->isCompleted());
     }
 
-    // TODO implement tests below
-//    public function testCanTransitionForwards(): void
-//    {
-//    }
+    public function testCanTransitionForwards(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertTrue($flow->canTransitionForwards());
+        // TODO implement conditions for when blockable is implemented.
+    }
 
     public function testCanTransitionForwardsWhenFormInvalid(): void
     {
-        $mockedForm = $this->createMock(FormInterface::class);
-        $mockedForm->method('isSubmitted')->willReturn(true);
-        $mockedForm->method('isValid')->willReturn(false);
-        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+        $this->createdFormWillBeInValid();
 
         $flow = $this->createStartedValidFormFlow();
 
@@ -100,10 +96,7 @@ final class FormFlowTest extends TestCase
         $step2->method('getNumber')->willReturn(2);
         $step3 = $this->createMock(StepInterface::class);
         $step3->method('getNumber')->willReturn(3);
-        $mockedForm = $this->createMock(FormInterface::class);
-        $mockedForm->method('isSubmitted')->willReturn(true);
-        $mockedForm->method('isValid')->willReturn(true);
-        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+        $this->createdFormWillBeValid();
 
         $flow = $this->createStartedValidFormFlowOnFinalStep($this->createDefinition([$step1, $step2, $step3]));
         $this->assertEquals(3, $flow->getCurrentStepNumber());
@@ -131,26 +124,114 @@ final class FormFlowTest extends TestCase
         $flow->transitionBackwards();
     }
 
-    // TODO implement tests below
-//    public function testCanTransitionBackwards(): void
-//    {
-//    }
+    public function testHasTransitionedWhenGoneForwards(): void
+    {
+        $this->createdFormWillBeValid();
 
-    // TODO implement tests below
-//    public function testTransition(): void
-//    {
-//
-//    }
-//
-//    public function testTransitionWithInvalidRequestTransition(): void
-//    {
-//
-//    }
-//
-//    public function testTransitionSavesTheDataExceptWhenItisTransitioningToTheLastStep(): void
-//    {
-//
-//    }
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertFalse($flow->hasTransitioned());
+        $flow->transitionForwards();
+        $this->assertTrue($flow->hasTransitioned());
+    }
+
+    public function testHasTransitionedWhenGoneBackwards(): void
+    {
+        $this->createdFormWillBeValid();
+
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $this->assertFalse($flow->hasTransitioned());
+        $flow->transitionBackwards();
+        $this->assertTrue($flow->hasTransitioned());
+    }
+
+    public function testCanTransitionBackwards(): void
+    {
+        $this->createdFormWillBeValid();
+
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertFalse($flow->canTransitionBackwards());
+        $flow->transitionForwards();
+        $this->assertTrue($flow->canTransitionBackwards());
+    }
+
+    /**
+     * @dataProvider transitionDataProvider
+     */
+    public function testTransition(string $requestedTransition, int $startingStepNumber, int $resultingStepNumber): void
+    {
+        $max = max([$startingStepNumber, $resultingStepNumber]);
+        $steps = [];
+        for ($i = 1; $i <= $max; $i++) {
+            $step = $this->createMock(StepInterface::class);
+            $step->method('getNumber')->willReturn($i);
+            $steps[] = $step;
+        }
+        $this->createdFormWillBeValid();
+        $mockedRequestStack = $this->createMockedRequestStack($requestedTransition);
+
+        $flow = $this->createStartedValidFormFlow($this->createDefinition($steps));
+        $flow->setRequestStack($mockedRequestStack);
+
+        while ($flow->getCurrentStepNumber() !== $startingStepNumber) {
+            $flow->transitionForwards();
+        }
+
+        $this->assertEquals($startingStepNumber, $flow->getCurrentStepNumber());
+        $flow->transition();
+        $this->assertEquals($resultingStepNumber, $flow->getCurrentStepNumber());
+    }
+
+    public function transitionDataProvider(): array
+    {
+        return [
+            'transition_forwards_1_to_2' => [
+                TransitionEnum::FORWARDS,
+                1,
+                2,
+            ],
+            'transition_forwards_3_to_4' => [
+                TransitionEnum::FORWARDS,
+                3,
+                4,
+            ],
+            'transition_backwards_2_to_1' => [
+                TransitionEnum::BACKWARDS,
+                2,
+                1,
+            ],
+            'transition_backwards_5_to_4' => [
+                TransitionEnum::BACKWARDS,
+                5,
+                4,
+            ],
+            // TODO implement RESET test cases
+        ];
+    }
+
+    public function testTransitionWithInvalidRequestTransition(): void
+    {
+        $mockedRequestStack = $this->createMockedRequestStack('some_invalid_value');
+
+        $flow = $this->createStartedValidFormFlow();
+        $flow->setRequestStack($mockedRequestStack);
+        $this->assertFalse($flow->transition());
+    }
+
+    public function testTransitionSavesTheDataExceptWhenItisTransitioningToTheLastStep(): void
+    {
+        $mockedForm = $this->createMock(FormInterface::class);
+        $mockedForm->method('isSubmitted')->willReturn(true);
+        $mockedForm->method('isValid')->willReturn(true);
+        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+
+        $mockedRequestStack = $this->createMockedRequestStack();
+
+        $flow = $this->createStartedValidFormFlow();
+        $flow->setRequestStack($mockedRequestStack);
+        $this->mockedStorageManager->expects($this->once())->method('save');
+        $flow->transition();
+    }
 
     protected function setUp(): void
     {
@@ -159,22 +240,30 @@ final class FormFlowTest extends TestCase
         $this->mockedFormFactory = $this->createMock(FormFactoryInterface::class);
     }
 
-    private function createStartedValidFormFlowOnFinalStep(?Definition $definition = null): FormFlowInterface
+    private function createdFormWillBeInValid(): void
     {
-        $flow = $this->createStartedValidFormFlow($definition);
-        while ($flow->canTransitionForwards() && $flow->getCurrentStepNumber() < $flow->getSteps()->count()) {
-            $flow->transitionForwards();
-        }
-
-        return $flow;
+        $mockedForm = $this->createMock(FormInterface::class);
+        $mockedForm->method('isSubmitted')->willReturn(true);
+        $mockedForm->method('isValid')->willReturn(false);
+        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
     }
 
-    private function createStartedValidFormFlow(?Definition $definition = null): FormFlowInterface
+    private function createdFormWillBeValid(): void
     {
-        $formFlow = $this->createValidFormFlow($definition);
-        $formFlow->start(new \stdClass());
+        $mockedForm = $this->createMock(FormInterface::class);
+        $mockedForm->method('isSubmitted')->willReturn(true);
+        $mockedForm->method('isValid')->willReturn(true);
+        $this->mockedFormFactory->method('create')->willReturn($mockedForm);
+    }
 
-        return $formFlow;
+    private function createMockedRequestStack(string $requestedTransition = TransitionEnum::FORWARDS): RequestStack
+    {
+        $mockedRequestStack = $this->createMock(RequestStack::class);
+        $mockedRequest = $this->createMock(Request::class);
+        $mockedRequestStack->method('getCurrentRequest')->willReturn($mockedRequest);
+        $mockedRequest->method('get')->willReturn($requestedTransition);
+
+        return $mockedRequestStack;
     }
 
     private function createDefinition(array $steps = [], string $expectedInstance = \stdClass::class, string $name = 'form_flow'): Definition
@@ -189,6 +278,26 @@ final class FormFlowTest extends TestCase
         }
 
         return new Definition($name, new StepCollection($steps), $expectedInstance);
+    }
+
+    private function createStartedValidFormFlowOnFinalStep(?Definition $definition = null): FormFlowInterface
+    {
+        $flow = $this->createValidFormFlow($definition);
+        $context = new Context(new \stdClass(), $flow->getSteps()->count());
+        while ($context->canTransitionForwards()) {
+            $context->transitionForwards();
+        }
+        $flow->start($context);
+
+        return $flow;
+    }
+
+    private function createStartedValidFormFlow(?Definition $definition = null): FormFlowInterface
+    {
+        $flow = $this->createValidFormFlow($definition);
+        $flow->start(new \stdClass());
+
+        return $flow;
     }
 
     private function createDefaultFormFlow(?Definition $definition = null): FormFlowInterface
