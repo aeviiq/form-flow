@@ -2,6 +2,9 @@
 
 namespace Aeviiq\FormFlow\Step;
 
+use Aeviiq\FormFlow\Exception\InvalidArgumentException;
+use Symfony\Component\Form\FormTypeInterface;
+
 final class Step implements StepInterface
 {
     /**
@@ -39,6 +42,9 @@ final class Step implements StepInterface
      */
     private $skipped = false;
 
+    /**
+     * @throws InvalidArgumentException When any of the given parameters are invalid.
+     */
     public function __construct(
         int $number,
         string $formType,
@@ -46,6 +52,26 @@ final class Step implements StepInterface
         string $nextLabel,
         string $previousLabel
     ) {
+        if ($number < 1) {
+            throw new InvalidArgumentException(\sprintf('The number must be above 1. "%d" given.', $number));
+        }
+
+        if (!\is_a($formType, FormTypeInterface::class, true)) {
+            throw new InvalidArgumentException(\sprintf('"%s" must be an instance of "%s".', $formType, FormTypeInterface::class));
+        }
+
+        if ('' === $label) {
+            throw new InvalidArgumentException('The label cannot be empty.');
+        }
+
+        if ('' === $nextLabel) {
+            throw new InvalidArgumentException('The next label cannot be empty.');
+        }
+
+        if ('' === $previousLabel) {
+            throw new InvalidArgumentException('The previous label cannot be empty.');
+        }
+
         $this->number = $number;
         $this->formType = $formType;
         $this->label = $label;
