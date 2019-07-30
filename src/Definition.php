@@ -22,18 +22,21 @@ final class Definition
      */
     private $expectedInstance;
 
+    /**
+     * @throws InvalidArgumentException When any of the given parameters are invalid.
+     */
     public function __construct(string $name, StepCollection $steps, string $expectedInstance)
     {
         if ('' === $name) {
-            throw new InvalidArgumentException(\sprintf('The definition "$name" cannot be empty.'));
-        }
-
-        if (!\class_exists($expectedInstance) && !\interface_exists($expectedInstance)) {
-            throw new InvalidArgumentException(\sprintf('The "$expectedInstance" must be an existing class or interface.'));
+            throw new InvalidArgumentException('The definition name cannot be empty.');
         }
 
         if ($steps->count() < 2) {
-            throw new InvalidArgumentException(\sprintf('A flow must consist of at least 2 steps.'));
+            throw new InvalidArgumentException('A flow must consist of at least 2 steps.');
+        }
+
+        if (!\class_exists($expectedInstance) && !\interface_exists($expectedInstance)) {
+            throw new InvalidArgumentException('The expected instance must be an existing class or interface.');
         }
 
         $this->name = $name;

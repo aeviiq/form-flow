@@ -2,6 +2,8 @@
 
 namespace Aeviiq\FormFlow;
 
+use Aeviiq\FormFlow\Exception\InvalidArgumentException;
+
 class Context implements TransitionableInterface, \Serializable
 {
     /**
@@ -26,6 +28,10 @@ class Context implements TransitionableInterface, \Serializable
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
+        if ($totalNumberOfSteps < 1) {
+            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 1. "%d" given.', $totalNumberOfSteps));
+        }
+
         $this->data = $data;
         $this->totalNumberOfSteps = $totalNumberOfSteps;
     }
