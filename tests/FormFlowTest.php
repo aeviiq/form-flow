@@ -233,6 +233,81 @@ final class FormFlowTest extends TestCase
         $flow->transition();
     }
 
+    public function testGetSteps(): void
+    {
+
+    }
+
+    public function testGetCurrentStep(): void
+    {
+
+    }
+
+    public function testGetCurrentStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testGetNextStep(): void
+    {
+
+    }
+
+    public function testGetNextStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testHasNextStep(): void
+    {
+
+    }
+
+    public function testHasNextStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testGetPreviousStep(): void
+    {
+
+    }
+
+    public function testGetPreviousStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testHasPreviousStep(): void
+    {
+
+    }
+
+    public function testHasPreviousStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testGetFirstStep(): void
+    {
+
+    }
+
+    public function testGetFirstStepWithoutAContext(): void
+    {
+
+    }
+
+    public function testGetLastStep(): void
+    {
+
+    }
+
+    public function testGetLastStepWithoutAContext(): void
+    {
+
+    }
+
     protected function setUp(): void
     {
         $this->mockedStorageManager = $this->createMock(StorageManagerInterface::class);
