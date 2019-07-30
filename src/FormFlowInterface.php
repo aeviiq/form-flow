@@ -2,13 +2,11 @@
 
 namespace Aeviiq\FormFlow;
 
-use Aeviiq\FormFlow\Step\StepCollection;
-use Aeviiq\FormFlow\Step\StepInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 // TODO implement these interfaces.
-interface FormFlowInterface extends StartableInterface, TransitionableInterface, ResettableInterface, CompletableInterface//, BlockableInterface
+interface FormFlowInterface extends StartableInterface, TransitionableInterface, SteppableInterface, ResettableInterface, CompletableInterface//, BlockableInterface
 {
     /**
      * @return string The unique name of the form flow.
@@ -36,20 +34,4 @@ interface FormFlowInterface extends StartableInterface, TransitionableInterface,
     public function getForm(): FormInterface;
 
     public function getCurrentStepNumber(): int;
-
-    public function getSteps(): StepCollection;
-
-    public function getCurrentStep(): StepInterface;
-
-    public function getNextStep(): StepInterface;
-
-    public function hasNextStep(): bool;
-
-    public function getPreviousStep(): StepInterface;
-
-    public function hasPreviousStep(): bool;
-
-    public function getFirstStep(): StepInterface;
-
-    public function getLastStep(): StepInterface;
 }
