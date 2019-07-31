@@ -298,12 +298,15 @@ final class FormFlowTest extends TestCase
         $this->expectExceptionMessage('There is no previous step.');
         $flow->getPreviousStep();
     }
-//
-//    public function testHasNextStep(): void
-//    {
-//
-//    }
-//
+
+    public function testHasNextStep(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertTrue($flow->hasNextStep());
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+        $this->assertFalse($flow->hasNextStep());
+    }
+
     public function testHasNextStepWithoutAContext(): void
     {
         $flow = $this->createDefaultFormFlow();
@@ -340,12 +343,14 @@ final class FormFlowTest extends TestCase
         $flow->getPreviousStep();
     }
 
-//
-//    public function testHasPreviousStep(): void
-//    {
-//
-//    }
-//
+    public function testHasPreviousStep(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertFalse($flow->hasPreviousStep());
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+        $this->assertTrue($flow->hasPreviousStep());
+    }
+
     public function testHasPreviousStepWithoutAContext(): void
     {
         $flow = $this->createDefaultFormFlow();
