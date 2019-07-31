@@ -281,6 +281,7 @@ final class FormFlowTest extends TestCase
         $steps[] = $step2;
         $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
         $this->assertSame($step2, $flow->getNextStep());
+        // TODO cases when skippable is added.
     }
 
     public function testGetNextStepWithoutAContext(): void
