@@ -281,7 +281,7 @@ final class FormFlow implements FormFlowInterface
     public function getNextStep(): StepInterface
     {
         if (!$this->hasNextStep()) {
-            throw new LogicException(\sprintf('There are no more next steps left.'));
+            throw new LogicException('There is no next step.');
         }
 
         return $this->getSteps()
@@ -301,7 +301,7 @@ final class FormFlow implements FormFlowInterface
     public function getPreviousStep(): StepInterface
     {
         if (!$this->hasPreviousStep()) {
-            throw new LogicException(\sprintf('TODO'));
+            throw new LogicException('There is no previous step.');
         }
 
         return $this->getSteps()->getStepByNumber($this->getCurrentStepNumber() - 1);

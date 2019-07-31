@@ -233,6 +233,163 @@ final class FormFlowTest extends TestCase
         $flow->transition();
     }
 
+    public function testGetSteps(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $stepCollection = new StepCollection($steps);
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', $stepCollection, \stdClass::class));
+        $this->assertSame($stepCollection, $flow->getSteps());
+    }
+
+    public function testGetCurrentStep(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $mockedRequestStack = $this->createMockedRequestStack();
+        $flow->setRequestStack($mockedRequestStack);
+        $this->createdFormWillBeValid();
+        $this->assertSame($step1, $flow->getCurrentStep());
+        $flow->transition();
+        $this->assertSame($step2, $flow->getCurrentStep());
+    }
+
+    public function testGetCurrentStepWithoutAContext(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $flow->getCurrentStep();
+    }
+
+    public function testGetNextStep(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $this->assertSame($step2, $flow->getNextStep());
+        // TODO cases when skippable is added.
+    }
+
+    public function testGetNextStepWithoutAContext(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $flow->getNextStep();
+    }
+
+    public function testGetNextStepWhenThereIsNone(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('There is no previous step.');
+        $flow->getPreviousStep();
+    }
+
+    public function testHasNextStep(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertTrue($flow->hasNextStep());
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+        $this->assertFalse($flow->hasNextStep());
+    }
+
+    public function testHasNextStepWithoutAContext(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $flow->getCurrentStep();
+    }
+
+    public function testGetPreviousStep(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $flow = $this->createStartedValidFormFlowOnFinalStep(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $this->assertSame($step1, $flow->getPreviousStep());
+    }
+
+    public function testGetPreviousStepWithoutAContext(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $flow->getPreviousStep();
+    }
+
+    public function testGetPreviousStepWhenThereIsNone(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('There is no previous step.');
+        $flow->getPreviousStep();
+    }
+
+    public function testHasPreviousStep(): void
+    {
+        $flow = $this->createStartedValidFormFlow();
+        $this->assertFalse($flow->hasPreviousStep());
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+        $this->assertTrue($flow->hasPreviousStep());
+    }
+
+    public function testHasPreviousStepWithoutAContext(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $flow->hasPreviousStep();
+    }
+
+    public function testGetFirstStep(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $step3 = $this->createMock(StepInterface::class);
+        $step3->method('getNumber')->willReturn(3);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $steps[] = $step3;
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $this->assertSame($step1, $flow->getFirstStep());
+    }
+
+    public function testGetLastStep(): void
+    {
+        $step1 = $this->createMock(StepInterface::class);
+        $step1->method('getNumber')->willReturn(1);
+        $step2 = $this->createMock(StepInterface::class);
+        $step2->method('getNumber')->willReturn(2);
+        $step3 = $this->createMock(StepInterface::class);
+        $step3->method('getNumber')->willReturn(3);
+        $steps[] = $step1;
+        $steps[] = $step2;
+        $steps[] = $step3;
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $this->assertSame($step3, $flow->getLastStep());
+    }
+
     protected function setUp(): void
     {
         $this->mockedStorageManager = $this->createMock(StorageManagerInterface::class);
