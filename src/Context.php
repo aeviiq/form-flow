@@ -28,7 +28,7 @@ class Context implements TransitionableInterface, \Serializable
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
-        if ($totalNumberOfSteps < 1) {
+        if ($totalNumberOfSteps < 2) {
             throw new InvalidArgumentException(\sprintf('The total number of steps must be above 1. "%d" given.', $totalNumberOfSteps));
         }
 

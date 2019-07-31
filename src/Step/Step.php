@@ -53,7 +53,7 @@ final class Step implements StepInterface
         string $previousLabel
     ) {
         if ($number < 1) {
-            throw new InvalidArgumentException(\sprintf('The number must be above 1. "%d" given.', $number));
+            throw new InvalidArgumentException(\sprintf('The number must be above 0. "%d" given.', $number));
         }
 
         if (!\is_a($formType, FormTypeInterface::class, true)) {

@@ -59,7 +59,7 @@ final class Definition
         return $this->name;
     }
 
-    public function getExpectedInstance(): string
+    public function getExpectedDataInstance(): string
     {
         return $this->expectedInstance;
     }

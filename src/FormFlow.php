@@ -408,7 +408,7 @@ final class FormFlow implements FormFlowInterface
 
     private function checkExpectedInstance(object $data): void
     {
-        $expectedInstance = $this->definition->getExpectedInstance();
+        $expectedInstance = $this->definition->getExpectedDataInstance();
         if (!($data instanceof $expectedInstance)) {
             throw new InvalidArgumentException(\sprintf('The data must be an instanceof %s, %s given.', $expectedInstance, \get_class($data)));
         }
