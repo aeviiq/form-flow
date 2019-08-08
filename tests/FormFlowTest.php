@@ -58,7 +58,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->transitionForwards();
     }
 
@@ -112,7 +112,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->transitionBackwards();
     }
 
@@ -120,7 +120,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createStartedValidFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Unable to transition backwards. Use canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
+        $this->expectExceptionMessage('Unable to transition backwards. Use FormFlow#canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
         $flow->transitionBackwards();
     }
 
@@ -267,7 +267,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getCurrentStep();
     }
 
@@ -288,7 +288,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getNextStep();
     }
 
@@ -312,7 +312,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getCurrentStep();
     }
 
@@ -332,7 +332,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getPreviousStep();
     }
 
@@ -356,7 +356,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->hasPreviousStep();
     }
 

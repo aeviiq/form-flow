@@ -3,17 +3,21 @@
 namespace Aeviiq\FormFlow;
 
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 // TODO implement these interfaces.
-interface FormFlowInterface extends StartableInterface, TransitionableInterface, SteppableInterface, ResettableInterface, CompletableInterface//, BlockableInterface
+interface FormFlowInterface extends
+    StartableInterface,
+    TransitionableInterface,
+    SteppableInterface,
+    ResettableInterface,
+    CompletableInterface,
+    RequestStackAwareInterface
+    // BlockableInterface
 {
     /**
      * @return string The unique name of the form flow.
      */
     public function getName(): string;
-
-    public function setRequestStack(RequestStack $requestStack): void;
 
     /**
      * @return string The input name which should have the desired transition value (@see TransitionEnum) as value.

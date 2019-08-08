@@ -93,7 +93,7 @@ final class FormFlow implements FormFlowInterface
     public function start(object $data): void
     {
         if ($this->isStarted()) {
-            throw new LogicException(\sprintf('The flow is already started. In order to start it again, you need to reset() it.'));
+            throw new LogicException('The flow is already started. In order to start it again, you need to reset() it.');
         }
 
         if ($data instanceof Context) {
@@ -111,7 +111,7 @@ final class FormFlow implements FormFlowInterface
     public function transitionForwards(): void
     {
         if (!$this->canTransitionForwards()) {
-            throw new LogicException('Unable to transition forwards. Use canTransitionForwards() to ensure the flow is in a valid state before attempting to transition.');
+            throw new LogicException('Unable to transition forwards. Use FormFlow#canTransitionForwards() to ensure the flow is in a valid state before attempting to transition.');
         }
 
         $this->transitioned = true;
@@ -145,7 +145,7 @@ final class FormFlow implements FormFlowInterface
     public function transitionBackwards(): void
     {
         if (!$this->canTransitionBackwards()) {
-            throw new LogicException('Unable to transition backwards. Use canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
+            throw new LogicException('Unable to transition backwards. Use FormFlow#canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
         }
 
         $this->transitioned = true;
@@ -237,7 +237,7 @@ final class FormFlow implements FormFlowInterface
     public function save(): void
     {
         if (!$this->isStarted()) {
-            throw new LogicException(\sprintf('Unable to save the flow without a context. Did you start() the flow?'));
+            throw new LogicException('Unable to save the flow without a context. Did you FormFlow#start() the flow?');
         }
 
         $this->storageManager->save($this->getStorageKey(), $this->getContext());
@@ -377,7 +377,7 @@ final class FormFlow implements FormFlowInterface
     private function getTransition(): TransitionEnum
     {
         if (!$this->isRequestedTransitionValid()) {
-            throw new LogicException('Unable to determine the requested transition. Use the getTransitionKey() method to name your submit actions.');
+            throw new LogicException('Unable to determine the requested transition. Use the FormFlow#getTransitionKey() method to name your submit actions.');
         }
 
         return new TransitionEnum($this->getRequestedTransitionFromRequest());
@@ -391,7 +391,7 @@ final class FormFlow implements FormFlowInterface
     private function getRequest(): Request
     {
         if (null === $this->requestStack || null === $request = $this->requestStack->getCurrentRequest()) {
-            throw new LogicException(\sprintf('Unable to retrieve the request.'));
+            throw new LogicException('Unable to retrieve the request.');
         }
 
         return $request;
@@ -400,7 +400,7 @@ final class FormFlow implements FormFlowInterface
     private function getContext(): Context
     {
         if (null === $this->context) {
-            throw new LogicException(\sprintf('The flow is missing it\'s context. Did you start() the flow?'));
+            throw new LogicException('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         }
 
         return $this->context;
@@ -428,7 +428,7 @@ final class FormFlow implements FormFlowInterface
 
         $context = $this->storageManager->load($key);
         if (!($context instanceof Context)) {
-            throw new UnexpectedValueException(\sprintf('The stored context is corrupted.'));
+            throw new UnexpectedValueException('The stored context is corrupted.');
         }
 
         $this->context = $context;
