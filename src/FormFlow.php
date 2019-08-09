@@ -3,6 +3,10 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Enum\TransitionEnum;
+use Aeviiq\FormFlow\Event\Event;
+use Aeviiq\FormFlow\Event\StartEvent;
+use Aeviiq\FormFlow\Event\TransitionBackwardsEvent;
+use Aeviiq\FormFlow\Event\TransitionForwardsEvent;
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\UnexpectedValueException;
@@ -103,6 +107,7 @@ final class FormFlow implements FormFlowInterface
 
         $this->checkExpectedInstance($data);
         $this->context = $context ?? new Context($data, $this->definition->getSteps()->count());
+        $this->dispatchFlowEvents(new StartEvent($this), FormFlowEvents::STARTED);
     }
 
     /**
@@ -114,8 +119,15 @@ final class FormFlow implements FormFlowInterface
             throw new LogicException('Unable to transition forwards. Use FormFlow#canTransitionForwards() to ensure the flow is in a valid state before attempting to transition.');
         }
 
-        $this->transitioned = true;
+        $currentStepNumber = $this->getCurrentStepNumber();
+        $this->dispatchFlowEvents(new TransitionForwardsEvent($this), FormFlowEvents::PRE_TRANSITION_FORWARDS, $currentStepNumber);
 
+        // The flow could be blocked by any PRE_TRANSITION_FORWARD listener, thus we check again if we are still able to transition.
+        if (!$this->canTransitionForwards()) {
+            return;
+        }
+
+        $this->transitioned = true;
         if ($this->getCurrentStep() === $this->getLastStep()) {
             $this->complete();
 
@@ -123,6 +135,8 @@ final class FormFlow implements FormFlowInterface
         }
 
         $this->getContext()->transitionForwards();
+
+        $this->dispatchFlowEvents(new TransitionForwardsEvent($this), FormFlowEvents::TRANSITIONED_FORWARDS, $currentStepNumber);
     }
 
     public function canTransitionForwards(): bool
@@ -148,9 +162,18 @@ final class FormFlow implements FormFlowInterface
             throw new LogicException('Unable to transition backwards. Use FormFlow#canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
         }
 
-        $this->transitioned = true;
+        $currentStepNumber = $this->getCurrentStepNumber();
+        $this->dispatchFlowEvents(new TransitionBackwardsEvent($this), FormFlowEvents::PRE_TRANSITION_BACKWARDS, $currentStepNumber);
 
+        // The flow could be blocked by any PRE_TRANSITION_BACKWARDS listener, thus we check again if we are still able to transition.
+        if (!$this->canTransitionBackwards()) {
+            return;
+        }
+
+        $this->transitioned = true;
         $this->getContext()->transitionBackwards();
+
+        $this->dispatchFlowEvents(new TransitionBackwardsEvent($this), FormFlowEvents::TRANSITIONED_BACKWARDS, $currentStepNumber);
     }
 
     public function canTransitionBackwards(): bool
@@ -219,19 +242,6 @@ final class FormFlow implements FormFlowInterface
 //    public function block(): void
 //    {
 //        $this->blocked = true;
-//    }
-
-//    public function isCompleted(): bool
-//    {
-//        return $this->getSteps()->filterIncompleteSteps()->isEmpty();
-//    }
-//
-//    public function complete(): void
-//    {
-//        $this->reset();
-//
-//        // TODO exception if any step, other then the last one is not yet completed.
-//        // TODO: Implement complete() method.
 //    }
 
     public function save(): void
@@ -417,6 +427,26 @@ final class FormFlow implements FormFlowInterface
     private function getStorageKey(): string
     {
         return \sprintf(static::$storageKey, $this->getName());
+    }
+
+    private function dispatchFlowEvents(Event $event, string $eventName, ?int $currentStepNumber = null): void
+    {
+        if (null !== $currentStepNumber) {
+            $this->eventDispatcher->dispatch($event, $this->createFlowStepListenerId($eventName, $currentStepNumber));
+        }
+
+        $this->eventDispatcher->dispatch($event, $this->createFlowListenerId($eventName));
+        $this->eventDispatcher->dispatch($event, $eventName);
+    }
+
+    private function createFlowListenerId(string $listener): string
+    {
+        return \sprintf('%s.%s', $listener, $this->getName());
+    }
+
+    private function createFlowStepListenerId(string $listener, int $currentStepNumber): string
+    {
+        return \sprintf('%s.%s.step_%s', $listener, $this->getName(), $currentStepNumber);
     }
 
     private function initialize(): void
