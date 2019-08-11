@@ -13,46 +13,63 @@ final class FormFlowEvents
 
     /**
      * This event is fired when the flow starts to transition forwards.
-     * The flow could be blocked inside any of these events.
+     * The flow can still be blocked during this event.
      *
-     * Typical use cases for the PRE_TRANSITION_FORWARDS event could be:
+     * Typical use cases for this event could be:
      *  - Additional (complex) validation on the submitted data.
      *      - This could prevent further progress by using the FormFlow#block() method.
-     *  - When the next step is dependend on the processed submitted data.
+     *  - When the next step is dependend on the processed submitted data and requires additional logic.
+     *  - To (temporarily) block any further process.
      *
      * Aeviiq\FormFlow\Event\TransitionForwardsEvent
      */
     public const PRE_TRANSITION_FORWARDS = 'form_flow.pre_transition_forwards';
 
     /**
-     *  This event is fired when the flow transitioned forwards.
+     * This event is fired when the flow transitioned forwards.
      *
      * Aeviiq\FormFlow\Event\TransitionForwardsEvent
      */
     public const TRANSITIONED_FORWARDS = 'form_flow.transitioned_forwards';
 
     /**
-     * TODO description
+     * This event is fired when the flow start to transition backwards.
+     * The flow can still be blocked during this event.
+     *
+     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
      */
     public const PRE_TRANSITION_BACKWARDS = 'form_flow.pre_transition_backwards';
 
     /**
-     * TODO description
+     * This event is fired when the flow transitioned backwards.
+     *
+     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
      */
     public const TRANSITIONED_BACKWARDS = 'form_flow.transitioned_backwards';
 
     /**
-     * TODO description
+     * This event is fired when the flow transitioned forwards.
+     *
+     * Aeviiq\FormFlow\Event\CompleteEvent
      */
     public const PRE_COMPLETE = 'form_flow.pre_complete';
 
     /**
-     * TODO description
+     * This event is fired when the flow has completed.
+     *
+     * Typical use cases for this event could be:
+     *  - Persist the flow data.
+     *  - Store the data as a placed order.
+     *  - Send a confirmation mail to the user.
+     *
+     * Aeviiq\FormFlow\Event\CompleteEvent
      */
     public const COMPLETED = 'form_flow.completed';
 
     /**
-     * TODO description
+     * This event is fired when the flow has reset.
+     *
+     * Aeviiq\FormFlow\Event\ResetEvent
      */
     public const RESET = 'form_flow.reset';
 
