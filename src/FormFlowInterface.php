@@ -29,6 +29,8 @@ interface FormFlowInterface extends
      */
     public function transition(): bool;
 
+    public function canComplete(): bool;
+
     public function save(): void;
 
     public function getData(): object;

@@ -3,7 +3,9 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Enum\TransitionEnum;
+use Aeviiq\FormFlow\Event\CompleteEvent;
 use Aeviiq\FormFlow\Event\Event;
+use Aeviiq\FormFlow\Event\ResetEvent;
 use Aeviiq\FormFlow\Event\StartEvent;
 use Aeviiq\FormFlow\Event\TransitionBackwardsEvent;
 use Aeviiq\FormFlow\Event\TransitionForwardsEvent;
@@ -124,17 +126,21 @@ final class FormFlow implements FormFlowInterface
 
         // The flow could be blocked by any PRE_TRANSITION_FORWARD listener, thus we check again if we are still able to transition.
         if (!$this->canTransitionForwards()) {
+            unset($this->forms[$currentStepNumber]);
+
             return;
         }
 
-        $this->transitioned = true;
         if ($this->getCurrentStep() === $this->getLastStep()) {
-            $this->complete();
+            if ($this->canComplete()) {
+                $this->complete();
+            }
 
             return;
         }
 
         $this->getContext()->transitionForwards();
+        $this->transitioned = true;
 
         $this->dispatchFlowEvents(new TransitionForwardsEvent($this), FormFlowEvents::TRANSITIONED_FORWARDS, $currentStepNumber);
     }
@@ -167,6 +173,8 @@ final class FormFlow implements FormFlowInterface
 
         // The flow could be blocked by any PRE_TRANSITION_BACKWARDS listener, thus we check again if we are still able to transition.
         if (!$this->canTransitionBackwards()) {
+            unset($this->forms[$currentStepNumber]);
+
             return;
         }
 
@@ -183,8 +191,8 @@ final class FormFlow implements FormFlowInterface
 
     public function reset(): void
     {
-        $this->context = null;
-        $this->storageManager->remove($this->getStorageKey());
+        $this->resetFlow();
+        $this->dispatchFlowEvents(new ResetEvent($this), FormFlowEvents::RESET);
     }
 
     public function getName(): string
@@ -223,16 +231,35 @@ final class FormFlow implements FormFlowInterface
 
     public function complete(): void
     {
-        // TODO check if each step is completed.
-        $this->reset();
+        if (!$this->canComplete()) {
+            throw new LogicException('Unable to complete. Use FormFlow#canComplete() to ensure the flow is in a valid state before attempting to complete.');
+        }
+
+        $data = $this->getData();
+        $this->dispatchFlowEvents(new CompleteEvent($this, $data), FormFlowEvents::PRE_COMPLETE);
+        if (!$this->canComplete()) {
+            unset($this->forms[$this->getCurrentStepNumber()]);
+
+            return;
+        }
+
+        $this->resetFlow();
+        $this->transitioned = true;
         $this->completed = true;
+        $this->dispatchFlowEvents(new CompleteEvent($this, $data), FormFlowEvents::COMPLETED);
+    }
+
+    public function canComplete(): bool
+    {
+        // TODO check if each step is completed.
+        // TODO add conditions which could make this return false.
+        return true;
     }
 
     public function isCompleted(): bool
     {
         return $this->completed;
     }
-
 
 //    public function isBlocked(): bool
 //    {
@@ -332,6 +359,13 @@ final class FormFlow implements FormFlowInterface
         return $this->getSteps()->last();
     }
 
+    private function resetFlow(): void
+    {
+        $this->context = null;
+        $this->storageManager->remove($this->getStorageKey());
+        $this->forms = [];
+    }
+
     private function getFormForStep(StepInterface $step): FormInterface
     {
         $stepNumber = $step->getNumber();
@@ -352,7 +386,7 @@ final class FormFlow implements FormFlowInterface
                 if ($this->canTransitionForwards()) {
                     $this->transitionForwards();
 
-                    return true;
+                    return $this->hasTransitioned();
                 }
 
                 return false;
@@ -365,7 +399,7 @@ final class FormFlow implements FormFlowInterface
 
                     $this->transitionBackwards();
 
-                    return true;
+                    return $this->hasTransitioned();
                 }
 
                 return false;

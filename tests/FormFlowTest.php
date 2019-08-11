@@ -444,7 +444,42 @@ final class FormFlowTest extends TestCase
         $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
     }
 
+    public function testCompleteFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->complete();
+        $expected = [
+            \sprintf('%s.%s', FormFlowEvents::PRE_COMPLETE, $flow->getName()),
+            FormFlowEvents::PRE_COMPLETE,
+            \sprintf('%s.%s', FormFlowEvents::COMPLETED, $flow->getName()),
+            FormFlowEvents::COMPLETED,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    public function testResetFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->reset();
+        $expected = [
+            \sprintf('%s.%s', FormFlowEvents::RESET, $flow->getName()),
+            FormFlowEvents::RESET,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    // TODO testReset(): void
+    // TODO testComplete(): void
+    // TODO testCanComplete(): void
+
     // TODO testTransitionForwardsCanBeBlockedInsidePreTransitionForwardsEvent(): void
+    // TODO testTransitionForwardsUnsetsCurrentStepFormIfFurtherProcessIsBlocked(): void
 
     protected function setUp(): void
     {
