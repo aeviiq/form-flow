@@ -7,6 +7,7 @@ use Aeviiq\FormFlow\Definition;
 use Aeviiq\FormFlow\Enum\TransitionEnum;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\FormFlow;
+use Aeviiq\FormFlow\FormFlowEvents;
 use Aeviiq\FormFlow\FormFlowInterface;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Aeviiq\FormFlow\Step\StepInterface;
@@ -14,6 +15,7 @@ use Aeviiq\StorageManager\StorageManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -58,7 +60,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->transitionForwards();
     }
 
@@ -112,7 +114,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->transitionBackwards();
     }
 
@@ -120,7 +122,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createStartedValidFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Unable to transition backwards. Use canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
+        $this->expectExceptionMessage('Unable to transition backwards. Use FormFlow#canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
         $flow->transitionBackwards();
     }
 
@@ -267,7 +269,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getCurrentStep();
     }
 
@@ -288,7 +290,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getNextStep();
     }
 
@@ -312,7 +314,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getCurrentStep();
     }
 
@@ -332,7 +334,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->getPreviousStep();
     }
 
@@ -356,7 +358,7 @@ final class FormFlowTest extends TestCase
     {
         $flow = $this->createDefaultFormFlow();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The flow is missing it\'s context. Did you start() the flow?');
+        $this->expectExceptionMessage('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         $flow->hasPreviousStep();
     }
 
@@ -390,10 +392,99 @@ final class FormFlowTest extends TestCase
         $this->assertSame($step3, $flow->getLastStep());
     }
 
+    public function testStartFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createValidFormFlow();
+
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->start(new \stdClass());
+        $expected = [
+            \sprintf('%s.%s', FormFlowEvents::STARTED, $flow->getName()),
+            FormFlowEvents::STARTED,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    public function testTransitionForwardsFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlow();
+
+        $stepNumber = $flow->getCurrentStepNumber();
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->transitionForwards();
+        $expected = [
+            \sprintf('%s.%s.step_%s', FormFlowEvents::PRE_TRANSITION_FORWARDS, $flow->getName(), $stepNumber),
+            \sprintf('%s.%s', FormFlowEvents::PRE_TRANSITION_FORWARDS, $flow->getName()),
+            FormFlowEvents::PRE_TRANSITION_FORWARDS,
+            \sprintf('%s.%s.step_%s', FormFlowEvents::TRANSITIONED_FORWARDS, $flow->getName(), $stepNumber),
+            \sprintf('%s.%s', FormFlowEvents::TRANSITIONED_FORWARDS, $flow->getName()),
+            FormFlowEvents::TRANSITIONED_FORWARDS,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    public function testTransitionBackwardsFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $stepNumber = $flow->getCurrentStepNumber();
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->transitionBackwards();
+        $expected = [
+            \sprintf('%s.%s.step_%s', FormFlowEvents::PRE_TRANSITION_BACKWARDS, $flow->getName(), $stepNumber),
+            \sprintf('%s.%s', FormFlowEvents::PRE_TRANSITION_BACKWARDS, $flow->getName()),
+            FormFlowEvents::PRE_TRANSITION_BACKWARDS,
+            \sprintf('%s.%s.step_%s', FormFlowEvents::TRANSITIONED_BACKWARDS, $flow->getName(), $stepNumber),
+            \sprintf('%s.%s', FormFlowEvents::TRANSITIONED_BACKWARDS, $flow->getName()),
+            FormFlowEvents::TRANSITIONED_BACKWARDS,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    public function testCompleteFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->complete();
+        $expected = [
+            \sprintf('%s.%s', FormFlowEvents::PRE_COMPLETE, $flow->getName()),
+            FormFlowEvents::PRE_COMPLETE,
+            \sprintf('%s.%s', FormFlowEvents::COMPLETED, $flow->getName()),
+            FormFlowEvents::COMPLETED,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    public function testResetFiresEvents(): void
+    {
+        $this->createdFormWillBeValid();
+        $flow = $this->createStartedValidFormFlowOnFinalStep();
+
+        $this->mockedEventDispatcher->dispatchedEvents = [];
+        $flow->reset();
+        $expected = [
+            \sprintf('%s.%s', FormFlowEvents::RESET, $flow->getName()),
+            FormFlowEvents::RESET,
+        ];
+        $this->assertSame($expected, $this->mockedEventDispatcher->dispatchedEvents);
+    }
+
+    // TODO testReset(): void
+    // TODO testComplete(): void
+    // TODO testCanComplete(): void
+
+    // TODO testTransitionForwardsCanBeBlockedInsidePreTransitionForwardsEvent(): void
+    // TODO testTransitionForwardsUnsetsCurrentStepFormIfFurtherProcessIsBlocked(): void
+
     protected function setUp(): void
     {
         $this->mockedStorageManager = $this->createMock(StorageManagerInterface::class);
-        $this->mockedEventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->mockedEventDispatcher = $this->createMockedEventDispatcher();
         $this->mockedFormFactory = $this->createMock(FormFactoryInterface::class);
     }
 
@@ -471,5 +562,46 @@ final class FormFlowTest extends TestCase
         $flow->setRequestStack($mockedRequestStack);
 
         return $flow;
+    }
+
+    private function createMockedEventDispatcher(): EventDispatcherInterface
+    {
+        return new class() implements EventDispatcherInterface
+        {
+            public $dispatchedEvents = [];
+
+            public function addListener($eventName, $listener, $priority = 0): void
+            {
+            }
+
+            public function addSubscriber(EventSubscriberInterface $subscriber): void
+            {
+            }
+
+            public function removeListener($eventName, $listener): void
+            {
+            }
+
+            public function removeSubscriber(EventSubscriberInterface $subscriber): void
+            {
+            }
+
+            public function getListeners($eventName = null)
+            {
+            }
+
+            public function dispatch($event, string $eventName = null)
+            {
+                $this->dispatchedEvents[] = $eventName;
+            }
+
+            public function getListenerPriority($eventName, $listener)
+            {
+            }
+
+            public function hasListeners($eventName = null)
+            {
+            }
+        };
     }
 }

@@ -3,6 +3,12 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Enum\TransitionEnum;
+use Aeviiq\FormFlow\Event\CompleteEvent;
+use Aeviiq\FormFlow\Event\Event;
+use Aeviiq\FormFlow\Event\ResetEvent;
+use Aeviiq\FormFlow\Event\StartEvent;
+use Aeviiq\FormFlow\Event\TransitionBackwardsEvent;
+use Aeviiq\FormFlow\Event\TransitionForwardsEvent;
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\UnexpectedValueException;
@@ -93,7 +99,7 @@ final class FormFlow implements FormFlowInterface
     public function start(object $data): void
     {
         if ($this->isStarted()) {
-            throw new LogicException(\sprintf('The flow is already started. In order to start it again, you need to reset() it.'));
+            throw new LogicException('The flow is already started. In order to start it again, you need to reset() it.');
         }
 
         if ($data instanceof Context) {
@@ -103,6 +109,7 @@ final class FormFlow implements FormFlowInterface
 
         $this->checkExpectedInstance($data);
         $this->context = $context ?? new Context($data, $this->definition->getSteps()->count());
+        $this->dispatchFlowEvents(new StartEvent($this), FormFlowEvents::STARTED);
     }
 
     /**
@@ -111,18 +118,31 @@ final class FormFlow implements FormFlowInterface
     public function transitionForwards(): void
     {
         if (!$this->canTransitionForwards()) {
-            throw new LogicException('Unable to transition forwards. Use canTransitionForwards() to ensure the flow is in a valid state before attempting to transition.');
+            throw new LogicException('Unable to transition forwards. Use FormFlow#canTransitionForwards() to ensure the flow is in a valid state before attempting to transition.');
         }
 
-        $this->transitioned = true;
+        $currentStepNumber = $this->getCurrentStepNumber();
+        $this->dispatchFlowEvents(new TransitionForwardsEvent($this), FormFlowEvents::PRE_TRANSITION_FORWARDS, $currentStepNumber);
+
+        // The flow could be blocked by any PRE_TRANSITION_FORWARD listener, thus we check again if we are still able to transition.
+        if (!$this->canTransitionForwards()) {
+            unset($this->forms[$currentStepNumber]);
+
+            return;
+        }
 
         if ($this->getCurrentStep() === $this->getLastStep()) {
-            $this->complete();
+            if ($this->canComplete()) {
+                $this->complete();
+            }
 
             return;
         }
 
         $this->getContext()->transitionForwards();
+        $this->transitioned = true;
+
+        $this->dispatchFlowEvents(new TransitionForwardsEvent($this), FormFlowEvents::TRANSITIONED_FORWARDS, $currentStepNumber);
     }
 
     public function canTransitionForwards(): bool
@@ -145,12 +165,23 @@ final class FormFlow implements FormFlowInterface
     public function transitionBackwards(): void
     {
         if (!$this->canTransitionBackwards()) {
-            throw new LogicException('Unable to transition backwards. Use canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
+            throw new LogicException('Unable to transition backwards. Use FormFlow#canTransitionBackwards() to ensure the flow is in a valid state before attempting to transition.');
+        }
+
+        $currentStepNumber = $this->getCurrentStepNumber();
+        $this->dispatchFlowEvents(new TransitionBackwardsEvent($this), FormFlowEvents::PRE_TRANSITION_BACKWARDS, $currentStepNumber);
+
+        // The flow could be blocked by any PRE_TRANSITION_BACKWARDS listener, thus we check again if we are still able to transition.
+        if (!$this->canTransitionBackwards()) {
+            unset($this->forms[$currentStepNumber]);
+
+            return;
         }
 
         $this->transitioned = true;
-
         $this->getContext()->transitionBackwards();
+
+        $this->dispatchFlowEvents(new TransitionBackwardsEvent($this), FormFlowEvents::TRANSITIONED_BACKWARDS, $currentStepNumber);
     }
 
     public function canTransitionBackwards(): bool
@@ -160,8 +191,8 @@ final class FormFlow implements FormFlowInterface
 
     public function reset(): void
     {
-        $this->context = null;
-        $this->storageManager->remove($this->getStorageKey());
+        $this->resetFlow();
+        $this->dispatchFlowEvents(new ResetEvent($this), FormFlowEvents::RESET);
     }
 
     public function getName(): string
@@ -200,16 +231,35 @@ final class FormFlow implements FormFlowInterface
 
     public function complete(): void
     {
-        // TODO check if each step is completed.
-        $this->reset();
+        if (!$this->canComplete()) {
+            throw new LogicException('Unable to complete. Use FormFlow#canComplete() to ensure the flow is in a valid state before attempting to complete.');
+        }
+
+        $data = $this->getData();
+        $this->dispatchFlowEvents(new CompleteEvent($this, $data), FormFlowEvents::PRE_COMPLETE);
+        if (!$this->canComplete()) {
+            unset($this->forms[$this->getCurrentStepNumber()]);
+
+            return;
+        }
+
+        $this->resetFlow();
+        $this->transitioned = true;
         $this->completed = true;
+        $this->dispatchFlowEvents(new CompleteEvent($this, $data), FormFlowEvents::COMPLETED);
+    }
+
+    public function canComplete(): bool
+    {
+        // TODO check if each step is completed.
+        // TODO add conditions which could make this return false.
+        return true;
     }
 
     public function isCompleted(): bool
     {
         return $this->completed;
     }
-
 
 //    public function isBlocked(): bool
 //    {
@@ -221,23 +271,10 @@ final class FormFlow implements FormFlowInterface
 //        $this->blocked = true;
 //    }
 
-//    public function isCompleted(): bool
-//    {
-//        return $this->getSteps()->filterIncompleteSteps()->isEmpty();
-//    }
-//
-//    public function complete(): void
-//    {
-//        $this->reset();
-//
-//        // TODO exception if any step, other then the last one is not yet completed.
-//        // TODO: Implement complete() method.
-//    }
-
     public function save(): void
     {
         if (!$this->isStarted()) {
-            throw new LogicException(\sprintf('Unable to save the flow without a context. Did you start() the flow?'));
+            throw new LogicException('Unable to save the flow without a context. Did you FormFlow#start() the flow?');
         }
 
         $this->storageManager->save($this->getStorageKey(), $this->getContext());
@@ -322,6 +359,13 @@ final class FormFlow implements FormFlowInterface
         return $this->getSteps()->last();
     }
 
+    private function resetFlow(): void
+    {
+        $this->context = null;
+        $this->storageManager->remove($this->getStorageKey());
+        $this->forms = [];
+    }
+
     private function getFormForStep(StepInterface $step): FormInterface
     {
         $stepNumber = $step->getNumber();
@@ -342,7 +386,7 @@ final class FormFlow implements FormFlowInterface
                 if ($this->canTransitionForwards()) {
                     $this->transitionForwards();
 
-                    return true;
+                    return $this->hasTransitioned();
                 }
 
                 return false;
@@ -355,7 +399,7 @@ final class FormFlow implements FormFlowInterface
 
                     $this->transitionBackwards();
 
-                    return true;
+                    return $this->hasTransitioned();
                 }
 
                 return false;
@@ -377,7 +421,7 @@ final class FormFlow implements FormFlowInterface
     private function getTransition(): TransitionEnum
     {
         if (!$this->isRequestedTransitionValid()) {
-            throw new LogicException('Unable to determine the requested transition. Use the getTransitionKey() method to name your submit actions.');
+            throw new LogicException('Unable to determine the requested transition. Use the FormFlow#getTransitionKey() method to name your submit actions.');
         }
 
         return new TransitionEnum($this->getRequestedTransitionFromRequest());
@@ -391,7 +435,7 @@ final class FormFlow implements FormFlowInterface
     private function getRequest(): Request
     {
         if (null === $this->requestStack || null === $request = $this->requestStack->getCurrentRequest()) {
-            throw new LogicException(\sprintf('Unable to retrieve the request.'));
+            throw new LogicException('Unable to retrieve the request.');
         }
 
         return $request;
@@ -400,7 +444,7 @@ final class FormFlow implements FormFlowInterface
     private function getContext(): Context
     {
         if (null === $this->context) {
-            throw new LogicException(\sprintf('The flow is missing it\'s context. Did you start() the flow?'));
+            throw new LogicException('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         }
 
         return $this->context;
@@ -419,6 +463,26 @@ final class FormFlow implements FormFlowInterface
         return \sprintf(static::$storageKey, $this->getName());
     }
 
+    private function dispatchFlowEvents(Event $event, string $eventName, ?int $currentStepNumber = null): void
+    {
+        if (null !== $currentStepNumber) {
+            $this->eventDispatcher->dispatch($event, $this->createFlowStepListenerId($eventName, $currentStepNumber));
+        }
+
+        $this->eventDispatcher->dispatch($event, $this->createFlowListenerId($eventName));
+        $this->eventDispatcher->dispatch($event, $eventName);
+    }
+
+    private function createFlowListenerId(string $listener): string
+    {
+        return \sprintf('%s.%s', $listener, $this->getName());
+    }
+
+    private function createFlowStepListenerId(string $listener, int $currentStepNumber): string
+    {
+        return \sprintf('%s.%s.step_%s', $listener, $this->getName(), $currentStepNumber);
+    }
+
     private function initialize(): void
     {
         $key = $this->getStorageKey();
@@ -428,7 +492,7 @@ final class FormFlow implements FormFlowInterface
 
         $context = $this->storageManager->load($key);
         if (!($context instanceof Context)) {
-            throw new UnexpectedValueException(\sprintf('The stored context is corrupted.'));
+            throw new UnexpectedValueException('The stored context is corrupted.');
         }
 
         $this->context = $context;

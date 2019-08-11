@@ -3,9 +3,9 @@
 namespace Aeviiq\FormFlow\Event;
 
 use Aeviiq\FormFlow\FormFlowInterface;
-use Symfony\Contracts\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event as BaseEvent;
 
-final class FlowEvent extends Event
+class Event extends BaseEvent
 {
     /**
      * @var FormFlowInterface
