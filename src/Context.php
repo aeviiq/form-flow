@@ -4,7 +4,7 @@ namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 
-class Context implements TransitionableInterface, \Serializable
+class Context
 {
     /**
      * @var object
@@ -21,15 +21,10 @@ class Context implements TransitionableInterface, \Serializable
      */
     private $totalNumberOfSteps;
 
-    /**
-     * @var bool
-     */
-    private $transitioned = false;
-
     public function __construct(object $data, int $totalNumberOfSteps)
     {
         if ($totalNumberOfSteps < 2) {
-            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 1. "%d" given.', $totalNumberOfSteps));
+            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 2. "%d" given.', $totalNumberOfSteps));
         }
 
         $this->data = $data;
@@ -46,63 +41,12 @@ class Context implements TransitionableInterface, \Serializable
         return $this->currentStepNumber;
     }
 
-    public function getTotalStepCount(): int
+    public function setCurrentStepNumber(int $currentStepNumber): void
     {
-        return $this->totalNumberOfSteps;
-    }
-
-    public function transitionForwards(): void
-    {
-        if ($this->canTransitionForwards()) {
-            ++$this->currentStepNumber;
-            $this->transitioned = true;
+        if ($this->currentStepNumber < 1 || $currentStepNumber > $this->totalNumberOfSteps) {
+            throw new InvalidArgumentException(\sprintf('Step number "%s" is invalid for this context.', $currentStepNumber));
         }
-    }
 
-    public function canTransitionForwards(): bool
-    {
-        return $this->getCurrentStepNumber() < $this->getTotalStepCount();
-    }
-
-    public function transitionBackwards(): void
-    {
-        if ($this->canTransitionBackwards()) {
-            --$this->currentStepNumber;
-            $this->transitioned = true;
-        }
-    }
-
-    public function canTransitionBackwards(): bool
-    {
-        return $this->getCurrentStepNumber() > 1;
-    }
-
-    public function hasTransitioned(): bool
-    {
-        return $this->transitioned;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function serialize(): string
-    {
-        return \serialize([
-            $this->data,
-            $this->currentStepNumber,
-            $this->totalNumberOfSteps,
-        ]);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function unserialize($serialized): void
-    {
-        [
-            $this->data,
-            $this->currentStepNumber,
-            $this->totalNumberOfSteps,
-        ] = \unserialize($serialized);
+        $this->currentStepNumber = $currentStepNumber;
     }
 }
