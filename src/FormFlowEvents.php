@@ -12,7 +12,8 @@ final class FormFlowEvents
     public const STARTED = 'form_flow.started';
 
     /**
-     * This event is fired when the flow starts to transition forwards.
+     * This event is fired before the flow transitions forwards.
+     * This is fired after form submit and validation.
      * The flow can still be blocked during this event.
      *
      * Typical use cases for this event could be:
