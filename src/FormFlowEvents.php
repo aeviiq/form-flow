@@ -5,13 +5,6 @@ namespace Aeviiq\FormFlow;
 final class FormFlowEvents
 {
     /**
-     * This event is fired when the flow starts.
-     *
-     * Aeviiq\FormFlow\Event\StartEvent
-     */
-    public const STARTED = 'form_flow.started';
-
-    /**
      * This event is fired before the flow transitions forwards.
      * This is fired after form submit and validation.
      * The flow can still be blocked during this event.

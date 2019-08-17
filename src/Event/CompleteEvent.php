@@ -11,10 +11,9 @@ final class CompleteEvent extends Event
      */
     private $data;
 
-    public function __construct(FormFlowInterface $formFlow, object $data)
+    public function __construct(FormFlowInterface $formFlow)
     {
         parent::__construct($formFlow);
-        $this->data = $data;
     }
 
     public function getData(): object
