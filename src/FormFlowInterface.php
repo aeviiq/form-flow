@@ -2,17 +2,10 @@
 
 namespace Aeviiq\FormFlow;
 
+use Aeviiq\FormFlow\Exception\LogicException;
 use Symfony\Component\Form\FormInterface;
 
-// TODO implement these interfaces.
-interface FormFlowInterface extends
-    StartableInterface,
-    TransitionableInterface,
-    SteppableInterface,
-    ResettableInterface,
-    CompletableInterface,
-    RequestStackAwareInterface
-    // BlockableInterface
+interface FormFlowInterface extends StartableInterface, SteppableInterface, ResettableInterface, BlockableInterface
 {
     /**
      * @return string The unique name of the form flow.
@@ -20,22 +13,18 @@ interface FormFlowInterface extends
     public function getName(): string;
 
     /**
-     * @return string The input name which should have the desired transition value (@see TransitionEnum) as value.
+     * @return string The html input name which should have the desired transition.
      */
     public function getTransitionKey(): string;
 
     /**
-     * @return bool Whether or not the requested transition was successful.
+     * @throws LogicException When the context is not yet set.
      */
-    public function transition(): bool;
-
-    public function canComplete(): bool;
+    public function getContext(): Context;
 
     public function save(): void;
 
     public function getData(): object;
-
-    public function isFormValid(): bool;
 
     public function getForm(): FormInterface;
 
