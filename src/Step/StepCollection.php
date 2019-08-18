@@ -2,7 +2,7 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-use Aeviiq\Collection\AbstractObjectCollection;
+use Aeviiq\Collection\AbstractImmutableObjectCollection;
 use Aeviiq\FormFlow\CompletableInterface;
 use Aeviiq\FormFlow\SkippableInterface;
 
@@ -11,7 +11,7 @@ use Aeviiq\FormFlow\SkippableInterface;
  * @method Step|null first
  * @method Step|null last
  */
-final class StepCollection extends AbstractObjectCollection
+final class StepCollection extends AbstractImmutableObjectCollection
 {
     public function getStepByNumber(int $number): StepInterface
     {

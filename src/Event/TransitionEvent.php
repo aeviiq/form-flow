@@ -4,14 +4,21 @@ namespace Aeviiq\FormFlow\Event;
 
 final class TransitionEvent extends Event
 {
+    /**
+     * @var bool
+     */
     private $blocked = false;
 
-    public function isFlowBlocked(): bool
+    public function isTransitionBlocked(): bool
     {
         return $this->blocked;
     }
 
-    public function blockFlow(): void
+    /**
+     * Blocks further transition, causing TransitionEvent::isTransitionBlocked() to return true.
+     * Once blocked, it can not be unblocked.
+     */
+    public function blockTransition(): void
     {
         $this->blocked = true;
     }

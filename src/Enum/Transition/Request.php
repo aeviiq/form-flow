@@ -14,15 +14,18 @@ final class Request extends Enum
 
     public const RESET = 'reset';
 
+    /**
+     * @var int|null
+     */
     private $requestedStepNumber;
 
-    public function __construct(string $value, int $requestedStepNumber = 1)
+    public function __construct(string $value, ?int $requestedStepNumber = null)
     {
         parent::__construct($value);
         $this->requestedStepNumber = $requestedStepNumber;
     }
 
-    public function getRequestedStepNumber(): int
+    public function getRequestedStepNumber(): ?int
     {
         return $this->requestedStepNumber;
     }
