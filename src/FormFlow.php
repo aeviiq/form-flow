@@ -43,11 +43,6 @@ final class FormFlow implements FormFlowInterface
      */
     private $forms = [];
 
-    /**
-     * @var bool
-     */
-    private $blocked = false;
-
     public function __construct(
         StorageManagerInterface $storageManager,
         FormFactoryInterface $formFactory,
@@ -72,16 +67,6 @@ final class FormFlow implements FormFlowInterface
 
         $this->checkExpectedInstance($data);
         $this->context = new Context($data, $this->definition->getSteps()->count());
-    }
-
-    public function isBlocked(): bool
-    {
-        return $this->blocked;
-    }
-
-    public function block(): void
-    {
-        $this->blocked = true;
     }
 
     public function getContext(): Context

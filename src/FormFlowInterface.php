@@ -5,7 +5,7 @@ namespace Aeviiq\FormFlow;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Symfony\Component\Form\FormInterface;
 
-interface FormFlowInterface extends StartableInterface, SteppableInterface, ResettableInterface, BlockableInterface
+interface FormFlowInterface extends StartableInterface, SteppableInterface, ResettableInterface
 {
     /**
      * @return string The unique name of the form flow.

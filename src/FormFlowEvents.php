@@ -15,14 +15,14 @@ final class FormFlowEvents
      *  - When the next step is dependend on the processed submitted data and requires additional logic.
      *  - To (temporarily) block any further process.
      *
-     * Aeviiq\FormFlow\Event\TransitionForwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionEvent
      */
     public const PRE_TRANSITION_FORWARDS = 'form_flow.pre_transition_forwards';
 
     /**
      * This event is fired when the flow transitioned forwards.
      *
-     * Aeviiq\FormFlow\Event\TransitionForwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionedEvent
      */
     public const TRANSITIONED_FORWARDS = 'form_flow.transitioned_forwards';
 
@@ -30,14 +30,14 @@ final class FormFlowEvents
      * This event is fired when the flow start to transition backwards.
      * The flow can still be blocked during this event.
      *
-     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionEvent
      */
     public const PRE_TRANSITION_BACKWARDS = 'form_flow.pre_transition_backwards';
 
     /**
      * This event is fired when the flow transitioned backwards.
      *
-     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionedEvent
      */
     public const TRANSITIONED_BACKWARDS = 'form_flow.transitioned_backwards';
 
