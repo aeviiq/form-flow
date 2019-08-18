@@ -2,6 +2,6 @@
 
 namespace Aeviiq\FormFlow\Event;
 
-final class TransitionForwardsEvent extends Event
+final class TransitionedEvent extends Event
 {
 }

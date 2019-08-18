@@ -15,9 +15,11 @@ final class Status extends AbstractFlag
 
     public const COMPLETED = 8;
 
-    public const VALID_FORM = 16;
+    public const RESET = 16;
 
-    public const INVALID_FORM = 32;
+    public const VALID_FORM = 32;
+
+    public const INVALID_FORM = 64;
 
     /**
      * @throws InvalidArgumentException When the given value contains an invalid flag combination.
@@ -30,6 +32,10 @@ final class Status extends AbstractFlag
 
         if ($this->isFlagSet($value, self::FAILURE) && $this->isFlagSet($value, self::COMPLETED)) {
             throw new InvalidArgumentException('A transition status can not be failure and completed at the same time.');
+        }
+
+        if ($this->isFlagSet($value, self::VALID_FORM) && $this->isFlagSet($value, self::INVALID_FORM)) {
+            throw new InvalidArgumentException('A transition status can not be valid form and invalid form at the same time.');
         }
 
         parent::__construct($value);
@@ -57,5 +63,15 @@ final class Status extends AbstractFlag
     public function isCompleted(): bool
     {
         return $this->contains(new self(self::COMPLETED));
+    }
+
+    public function isReset(): bool
+    {
+        return $this->contains(new self(self::RESET));
+    }
+
+    public function isFormValid(): bool
+    {
+        return $this->contains(new self(self::VALID_FORM));
     }
 }
