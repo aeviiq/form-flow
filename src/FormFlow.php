@@ -104,9 +104,9 @@ final class FormFlow implements FormFlowInterface
         return $this->getContext()->getData();
     }
 
-    public function getForm(): FormInterface
+    public function getCurrentStepForm(): FormInterface
     {
-        return $this->getFormForStep($this->getCurrentStep());
+        return $this->getFormByStep($this->getCurrentStep());
     }
 
     public function getCurrentStepNumber(): int
@@ -173,7 +173,7 @@ final class FormFlow implements FormFlowInterface
         return \sprintf('flow_%s_%s', $this->getName(), 'transition');
     }
 
-    private function getFormForStep(StepInterface $step): FormInterface
+    public function getFormByStep(StepInterface $step): FormInterface
     {
         $stepNumber = $step->getNumber();
         if (!isset($this->forms[$stepNumber])) {
@@ -184,6 +184,11 @@ final class FormFlow implements FormFlowInterface
         }
 
         return $this->forms[$stepNumber];
+    }
+
+    public function getFormByStepNumber(int $stepNumber): FormInterface
+    {
+        return $this->getFormByStep($this->getSteps()->getStepByNumber($stepNumber));
     }
 
     private function checkExpectedInstance(object $data): void

@@ -3,6 +3,7 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Step\StepInterface;
 use Symfony\Component\Form\FormInterface;
 
 interface FormFlowInterface extends StartableInterface, SteppableInterface, ResettableInterface
@@ -26,7 +27,11 @@ interface FormFlowInterface extends StartableInterface, SteppableInterface, Rese
 
     public function getData(): object;
 
-    public function getForm(): FormInterface;
+    public function getCurrentStepForm(): FormInterface;
+
+    public function getFormByStep(StepInterface $step): FormInterface;
+
+    public function getFormByStepNumber(int $stepNumber): FormInterface;
 
     public function getCurrentStepNumber(): int;
 }
