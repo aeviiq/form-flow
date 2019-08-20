@@ -2,10 +2,7 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-use Aeviiq\FormFlow\CompletableInterface;
-use Aeviiq\FormFlow\SkippableInterface;
-
-interface StepInterface extends EquatableInterface, CompletableInterface, SkippableInterface
+interface StepInterface extends EquatableInterface
 {
     public function getNumber(): int;
 

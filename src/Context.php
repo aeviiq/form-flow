@@ -3,8 +3,10 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
+use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Step\StepInterface;
 
-class Context implements TransitionableInterface, \Serializable
+class Context
 {
     /**
      * @var object
@@ -22,14 +24,14 @@ class Context implements TransitionableInterface, \Serializable
     private $totalNumberOfSteps;
 
     /**
-     * @var bool
+     * @var bool[]
      */
-    private $transitioned = false;
+    private $completedSteps = [];
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
         if ($totalNumberOfSteps < 2) {
-            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 1. "%d" given.', $totalNumberOfSteps));
+            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 2. "%d" given.', $totalNumberOfSteps));
         }
 
         $this->data = $data;
@@ -46,63 +48,32 @@ class Context implements TransitionableInterface, \Serializable
         return $this->currentStepNumber;
     }
 
-    public function getTotalStepCount(): int
+    public function setCurrentStepNumber(int $currentStepNumber): void
     {
-        return $this->totalNumberOfSteps;
-    }
-
-    public function transitionForwards(): void
-    {
-        if ($this->canTransitionForwards()) {
-            ++$this->currentStepNumber;
-            $this->transitioned = true;
+        if ($this->currentStepNumber < 1 || $currentStepNumber > $this->totalNumberOfSteps) {
+            throw new InvalidArgumentException(\sprintf('Step number "%s" is invalid for this context.', $currentStepNumber));
         }
+
+        $this->currentStepNumber = $currentStepNumber;
     }
 
-    public function canTransitionForwards(): bool
+    public function markCompleted(StepInterface $step): void
     {
-        return $this->getCurrentStepNumber() < $this->getTotalStepCount();
-    }
-
-    public function transitionBackwards(): void
-    {
-        if ($this->canTransitionBackwards()) {
-            --$this->currentStepNumber;
-            $this->transitioned = true;
+        $stepNumber = $step->getNumber();
+        if ($this->currentStepNumber < $stepNumber) {
+            throw new LogicException('Can not mark a step that is greater than the current step as completed.');
         }
+
+        $this->completedSteps[$stepNumber] = true;
     }
 
-    public function canTransitionBackwards(): bool
+    public function markIncompleted(StepInterface $step): void
     {
-        return $this->getCurrentStepNumber() > 1;
+        unset($this->completedSteps[$step->getNumber()]);
     }
 
-    public function hasTransitioned(): bool
+    public function isCompleted(StepInterface $step): bool
     {
-        return $this->transitioned;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function serialize(): string
-    {
-        return \serialize([
-            $this->data,
-            $this->currentStepNumber,
-            $this->totalNumberOfSteps,
-        ]);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function unserialize($serialized): void
-    {
-        [
-            $this->data,
-            $this->currentStepNumber,
-            $this->totalNumberOfSteps,
-        ] = \unserialize($serialized);
+        return $this->completedSteps[$step->getNumber()] ?? false;
     }
 }

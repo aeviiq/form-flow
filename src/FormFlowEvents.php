@@ -5,47 +5,41 @@ namespace Aeviiq\FormFlow;
 final class FormFlowEvents
 {
     /**
-     * This event is fired when the flow starts.
-     *
-     * Aeviiq\FormFlow\Event\StartEvent
-     */
-    public const STARTED = 'form_flow.started';
-
-    /**
-     * This event is fired when the flow starts to transition forwards.
-     * The flow can still be blocked during this event.
+     * This event is fired before the flow transitions forwards.
+     * This is fired after form submit and validation.
+     * The further progress can be blocked in this event.
      *
      * Typical use cases for this event could be:
-     *  - Additional (complex) validation on the submitted data.
-     *      - This could prevent further progress by using the FormFlow#block() method.
+     *  - Additional (complex) domain validation on the submitted data.
+     *      - This could prevent further progress by using the TransitionEvent::blockTransition() method.
      *  - When the next step is dependend on the processed submitted data and requires additional logic.
      *  - To (temporarily) block any further process.
      *
-     * Aeviiq\FormFlow\Event\TransitionForwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionEvent
      */
-    public const PRE_TRANSITION_FORWARDS = 'form_flow.pre_transition_forwards';
+    public const PRE_FORWARDS = 'form_flow.pre_forwards';
 
     /**
      * This event is fired when the flow transitioned forwards.
      *
-     * Aeviiq\FormFlow\Event\TransitionForwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionedEvent
      */
-    public const TRANSITIONED_FORWARDS = 'form_flow.transitioned_forwards';
+    public const FORWARDS = 'form_flow.forwards';
 
     /**
      * This event is fired when the flow start to transition backwards.
-     * The flow can still be blocked during this event.
+     * The further progress can be blocked in this event.
      *
-     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionEvent
      */
-    public const PRE_TRANSITION_BACKWARDS = 'form_flow.pre_transition_backwards';
+    public const PRE_BACKWARDS = 'form_flow.pre_backwards';
 
     /**
      * This event is fired when the flow transitioned backwards.
      *
-     * Aeviiq\FormFlow\Event\TransitionBackwardsEvent
+     * Aeviiq\FormFlow\Event\TransitionedEvent
      */
-    public const TRANSITIONED_BACKWARDS = 'form_flow.transitioned_backwards';
+    public const BACKWARDS = 'form_flow.backwards';
 
     /**
      * This event is fired when the flow transitioned forwards.

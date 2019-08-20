@@ -2,16 +2,14 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-use Aeviiq\Collection\AbstractObjectCollection;
-use Aeviiq\FormFlow\CompletableInterface;
-use Aeviiq\FormFlow\SkippableInterface;
+use Aeviiq\Collection\AbstractImmutableObjectCollection;
 
 /**
  * @method \ArrayIterator|Step[] getIterator
  * @method Step|null first
  * @method Step|null last
  */
-final class StepCollection extends AbstractObjectCollection
+final class StepCollection extends AbstractImmutableObjectCollection
 {
     public function getStepByNumber(int $number): StepInterface
     {
@@ -24,34 +22,6 @@ final class StepCollection extends AbstractObjectCollection
     {
         return null !== $this->getOneOrNullBy(static function (StepInterface $step) use ($number): bool {
             return $step->getNumber() === $number;
-        });
-    }
-
-    public function filterCompletedSteps(): StepCollection
-    {
-        return $this->filter(static function (CompletableInterface $step) {
-            return $step->isCompleted();
-        });
-    }
-
-    public function filterIncompleteSteps(): StepCollection
-    {
-        return $this->filter(static function (CompletableInterface $step) {
-            return !$step->isCompleted();
-        });
-    }
-
-    public function filterSkippedSteps(): StepCollection
-    {
-        return $this->filter(static function (SkippableInterface $step) {
-            return $step->isSkipped();
-        });
-    }
-
-    public function filterUnskippedSteps(): StepCollection
-    {
-        return $this->filter(static function (SkippableInterface $step) {
-            return !$step->isSkipped();
         });
     }
 

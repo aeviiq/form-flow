@@ -33,16 +33,6 @@ final class Step implements StepInterface
     private $previousLabel;
 
     /**
-     * @var bool
-     */
-    private $completed = false;
-
-    /**
-     * @var bool
-     */
-    private $skipped = false;
-
-    /**
      * @throws InvalidArgumentException When any of the given parameters are invalid.
      */
     public function __construct(
@@ -102,26 +92,6 @@ final class Step implements StepInterface
     public function getPreviousLabel(): string
     {
         return $this->previousLabel;
-    }
-
-    public function isCompleted(): bool
-    {
-        return $this->completed;
-    }
-
-    public function complete(): void
-    {
-        $this->completed = true;
-    }
-
-    public function isSkipped(): bool
-    {
-        return $this->skipped;
-    }
-
-    public function skip(): void
-    {
-        $this->skipped = true;
     }
 
     public function isEqualTo(StepInterface $step): bool
