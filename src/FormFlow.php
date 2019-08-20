@@ -132,7 +132,6 @@ final class FormFlow implements FormFlowInterface
 
         return $this->getSteps()
             ->filterStepsGreaterThanNumber($this->getCurrentStepNumber())
-            ->filterUnskippedSteps()
             ->last();
     }
 
@@ -140,7 +139,6 @@ final class FormFlow implements FormFlowInterface
     {
         return !$this->getSteps()
             ->filterStepsGreaterThanNumber($this->getCurrentStepNumber())
-            ->filterUnskippedSteps()
             ->isEmpty();
     }
 

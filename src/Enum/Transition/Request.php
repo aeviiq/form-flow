@@ -27,6 +27,14 @@ final class Request extends Enum
             throw new InvalidArgumentException(\sprintf('A requested step number must be above 0. "%s" given.', $requestedStepNumber));
         }
 
+        if (self::FORWARDS === $value && $requestedStepNumber < 2) {
+            throw new InvalidArgumentException(\sprintf('A requested step number must be above 1 when going forwards. "%s" given.', $requestedStepNumber));
+        }
+
+        if (self::BACKWARDS === $value && $requestedStepNumber < 1) {
+            throw new InvalidArgumentException(\sprintf('A requested step number must be above 0 when going backwards. "%s" given.', $requestedStepNumber));
+        }
+
         $this->requestedStepNumber = $requestedStepNumber;
     }
 
