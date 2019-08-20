@@ -3,6 +3,8 @@
 namespace Aeviiq\FormFlow;
 
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
+use Aeviiq\FormFlow\Exception\LogicException;
+use Aeviiq\FormFlow\Step\StepInterface;
 
 class Context
 {
@@ -20,6 +22,11 @@ class Context
      * @var int
      */
     private $totalNumberOfSteps;
+
+    /**
+     * @var bool[]
+     */
+    private $completedSteps = [];
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
@@ -48,5 +55,25 @@ class Context
         }
 
         $this->currentStepNumber = $currentStepNumber;
+    }
+
+    public function markCompleted(StepInterface $step): void
+    {
+        $stepNumber = $step->getNumber();
+        if ($this->currentStepNumber < $stepNumber) {
+            throw new LogicException('Can not mark a step that is greater than the current step as completed.');
+        }
+
+        $this->completedSteps[$stepNumber] = true;
+    }
+
+    public function markIncompleted(StepInterface $step): void
+    {
+        unset($this->completedSteps[$step->getNumber()]);
+    }
+
+    public function isCompleted(StepInterface $step): bool
+    {
+        return $this->completedSteps[$step->getNumber()] ?? false;
     }
 }
