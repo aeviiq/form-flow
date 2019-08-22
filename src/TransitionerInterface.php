@@ -96,16 +96,14 @@ interface TransitionerInterface
      *
      * This should always fire the following events (also see Aeviiq\FormFlow\FormFlowEvents):
      *     - Aeviiq\FormFlow\Event\TransitionEvent
-     *     - Aeviiq\FormFlow\Event\TransitionedEvent
+     *     - Aeviiq\FormFlow\Event\CompletedEvent
      *
-     * Each of these events should fire a global, flow-specific and flow-step-specific event.
+     * Each of these events should fire a global and flow-specific.
      *      e.g.:
      *          global:             form_flow.pre_backwards
      *          flow-specific:      form_flow.pre_backwards.flow_name
-     *          flow-step-specific: form_flow.pre_backwards.flow_name.step_1
      *
-     * After updating the flow context to the new step number, a FormFlowInterface#save() should be called,
-     * to ensure the valid state is persisted.
+     * After firing the completed event, FormFlowInterface#reset() should be called.
      *
      * @throws TransitionException When the current step is not the last step.
      */

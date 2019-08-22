@@ -92,7 +92,6 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
      */
     public function forwards(FormFlowInterface $flow): Status
     {
-        // Sanity checks.
         $currentStep = $flow->getCurrentStep();
         if ($flow->getCurrentStep() === $flow->getLastStep()) {
             throw new TransitionException($flow, 'The flow is on the last step and can not transition forwards.');
