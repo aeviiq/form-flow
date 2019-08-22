@@ -30,17 +30,26 @@ final class Status extends AbstractFlag
             throw new InvalidArgumentException('A transition status can not be successful and failure at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::FAILURE) && $this->isFlagSet($value, self::COMPLETED)) {
-            throw new InvalidArgumentException('A transition status can not be failure and completed at the same time.');
+        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::BLOCKED)) {
+            throw new InvalidArgumentException('A transition status can not be successful and blocked at the same time.');
+        }
+
+        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::INVALID_FORM)) {
+            throw new InvalidArgumentException('A transition status can not be successful and invalid form at the same time.');
+        }
+
+        if ($this->isFlagSet($value, self::COMPLETED) && $this->isFlagSet($value, self::FAILURE)) {
+            throw new InvalidArgumentException('A transition status can not be completed and failure at the same time.');
+        }
+
+        if ($this->isFlagSet($value, self::COMPLETED) && $this->isFlagSet($value, self::INVALID_FORM)) {
+            throw new InvalidArgumentException('A transition status can not be completed and invalid form at the same time.');
         }
 
         if ($this->isFlagSet($value, self::VALID_FORM) && $this->isFlagSet($value, self::INVALID_FORM)) {
             throw new InvalidArgumentException('A transition status can not be valid form and invalid form at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::BLOCKED)) {
-            throw new InvalidArgumentException('A transition status can not be successful and blocked at the same time.');
-        }
 
         parent::__construct($value);
     }

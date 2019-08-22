@@ -50,7 +50,7 @@ class Context
 
     public function setCurrentStepNumber(int $currentStepNumber): void
     {
-        if ($this->currentStepNumber < 1 || $currentStepNumber > $this->totalNumberOfSteps) {
+        if ($currentStepNumber < 1 || $currentStepNumber > $this->totalNumberOfSteps) {
             throw new InvalidArgumentException(\sprintf('Step number "%s" is invalid for this context.', $currentStepNumber));
         }
 

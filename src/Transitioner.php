@@ -48,7 +48,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     public function transition(FormFlowInterface $flow): Status
     {
         if (!$this->hasTransitionRequest($flow)) {
-            throw new TransitionException(\sprintf(
+            throw new TransitionException($flow, \sprintf(
                 'Unable to transition flow "%s". Use TransitionerInterface#hasTransitionRequest() to ensure there is a transition request before attempting to transition.',
                 $flow->getName()
             ));
@@ -64,7 +64,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
                 $currentStepNumber = $flow->getCurrentStepNumber();
                 $requestedStepNumber = $request->getRequestedStepNumber();
                 if ($currentStepNumber <= $requestedStepNumber || $requestedStepNumber > $flow->getSteps()->count()) {
-                    throw new TransitionException(\sprintf('"%s" is an invalid requested step number in the current context.', $requestedStepNumber));
+                    throw new TransitionException($flow, \sprintf('"%s" is an invalid requested step number in the current context.', $requestedStepNumber));
                 }
 
                 while ($flow->getCurrentStepNumber() > $requestedStepNumber) {
@@ -92,10 +92,9 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
      */
     public function forwards(FormFlowInterface $flow): Status
     {
-        // Sanity checks.
         $currentStep = $flow->getCurrentStep();
         if ($flow->getCurrentStep() === $flow->getLastStep()) {
-            throw new TransitionException('The flow is on the last step and can not transition forwards.');
+            throw new TransitionException($flow, 'The flow is on the last step and can not transition forwards.');
         }
 
         $form = $flow->getCurrentStepForm();
@@ -127,7 +126,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     {
         $currentStep = $flow->getCurrentStep();
         if ($flow->getCurrentStep() === $flow->getFirstStep()) {
-            throw new TransitionException('The flow is on the first step and can not transition backwards.');
+            throw new TransitionException($flow, 'The flow is on the first step and can not transition backwards.');
         }
 
         $form = $flow->getCurrentStepForm();
@@ -156,7 +155,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     public function complete(FormFlowInterface $flow): Status
     {
         if ($flow->getCurrentStep() !== $flow->getLastStep()) {
-            throw new TransitionException('The flow must be on the last step in order to be completed.');
+            throw new TransitionException($flow, 'The flow must be on the last step in order to be completed.');
         }
 
         $form = $flow->getCurrentStepForm();
@@ -251,7 +250,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
             }
         }
 
-        throw new TransitionException(\sprintf('"%s" is an invalid transition request.', $transition));
+        throw new TransitionException($flow, \sprintf('"%s" is an invalid transition request.', $transition));
     }
 
     private function getHttpRequest(): HttpRequest
