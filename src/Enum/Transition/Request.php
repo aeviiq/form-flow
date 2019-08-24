@@ -2,10 +2,10 @@
 
 namespace Aeviiq\FormFlow\Enum\Transition;
 
+use Aeviiq\Enum\AbstractEnum;
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
-use MyCLabs\Enum\Enum;
 
-final class Request extends Enum
+final class Request extends AbstractEnum
 {
     public const FORWARDS = 'forwards';
 
