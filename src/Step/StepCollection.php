@@ -2,14 +2,14 @@
 
 namespace Aeviiq\FormFlow\Step;
 
-use Aeviiq\Collection\AbstractImmutableObjectCollection;
+use Aeviiq\Collection\ImmutableObjectCollection;
 
 /**
  * @method \ArrayIterator|Step[] getIterator
  * @method Step|null first
  * @method Step|null last
  */
-final class StepCollection extends AbstractImmutableObjectCollection
+final class StepCollection extends ImmutableObjectCollection
 {
     public function getStepByNumber(int $number): StepInterface
     {
