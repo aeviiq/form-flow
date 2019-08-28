@@ -42,9 +42,8 @@ final class FormFlowTest extends TestCase
         $step2->method('getNumber')->willReturn(2);
         $steps[] = $step1;
         $steps[] = $step2;
-        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', \stdClass::class, new StepCollection($steps)));
         $this->assertSame($step2, $flow->getNextStep());
-        // TODO cases when skippable is added.
     }
 
     public function testGetNextStepWithoutAContext(): void
@@ -87,7 +86,7 @@ final class FormFlowTest extends TestCase
         $step2->method('getNumber')->willReturn(2);
         $steps[] = $step1;
         $steps[] = $step2;
-        $flow = $this->createStartedValidFormFlowOnFinalStep(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $flow = $this->createStartedValidFormFlowOnFinalStep(new Definition('form_flow', \stdClass::class, new StepCollection($steps)));
         $this->assertSame($step1, $flow->getPreviousStep());
     }
 
@@ -134,7 +133,7 @@ final class FormFlowTest extends TestCase
         $steps[] = $step1;
         $steps[] = $step2;
         $steps[] = $step3;
-        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', \stdClass::class, new StepCollection($steps)));
         $this->assertSame($step1, $flow->getFirstStep());
     }
 
@@ -149,7 +148,7 @@ final class FormFlowTest extends TestCase
         $steps[] = $step1;
         $steps[] = $step2;
         $steps[] = $step3;
-        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', new StepCollection($steps), \stdClass::class));
+        $flow = $this->createStartedValidFormFlow(new Definition('form_flow', \stdClass::class, new StepCollection($steps)));
         $this->assertSame($step3, $flow->getLastStep());
     }
 
@@ -176,7 +175,7 @@ final class FormFlowTest extends TestCase
             $steps[] = $step4;
         }
 
-        return new Definition($name, new StepCollection($steps), $expectedInstance);
+        return new Definition($name, $expectedInstance, new StepCollection($steps));
     }
 
     private function createStartedValidFormFlowOnFinalStep(?Definition $definition = null): FormFlowInterface

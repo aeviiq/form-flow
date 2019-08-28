@@ -25,7 +25,7 @@ final class Definition
     /**
      * @throws InvalidArgumentException When any of the given parameters are invalid.
      */
-    public function __construct(string $name, StepCollection $steps, string $expectedInstance)
+    public function __construct(string $name, string $expectedInstance, StepCollection $steps)
     {
         if ('' === $name) {
             throw new InvalidArgumentException('The definition name cannot be empty.');
