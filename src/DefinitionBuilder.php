@@ -24,7 +24,7 @@ final class DefinitionBuilder
 
     public function build(): Definition
     {
-        $definition = new Definition($this->name, new StepCollection($this->steps), $this->expectedDataInstance);
+        $definition = new Definition($this->name, $this->expectedDataInstance, new StepCollection($this->steps));
         $this->reset();
 
         return $definition;
