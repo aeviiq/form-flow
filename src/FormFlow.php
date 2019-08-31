@@ -2,6 +2,7 @@
 
 namespace Aeviiq\FormFlow;
 
+use Aeviiq\Collection\StringCollection;
 use Aeviiq\FormFlow\Exception\InvalidArgumentException;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\UnexpectedValueException;
@@ -102,6 +103,11 @@ final class FormFlow implements FormFlowInterface
     public function getData(): object
     {
         return $this->getContext()->getData();
+    }
+
+    public function getGroups(): StringCollection
+    {
+        return $this->definition->getGroups();
     }
 
     public function getCurrentStepForm(): FormInterface
