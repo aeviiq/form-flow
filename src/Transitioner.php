@@ -54,7 +54,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
             ));
         }
 
-        $request = $this->getValidRequest($flow);
+        $request = Request::createByHttpRequestAndFlow($this->getHttpRequest(), $flow);
         switch ($request->getValue()) {
             case (Request::FORWARDS):
                 // For now, we don't support multiple forwards transitions.
@@ -227,30 +227,6 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         if (!$form->isSubmitted()) {
             $form->handleRequest($this->getHttpRequest());
         }
-    }
-
-    private function getValidRequest(FormFlowInterface $flow): Request
-    {
-        $transition = (string)$this->getHttpRequest()->get($flow->getTransitionKey(), '');
-        if (Request::isValid($transition)) {
-            if (Request::FORWARDS === $transition) {
-                $stepNumber = $flow->getCurrentStepNumber() + 1;
-            } elseif (Request::BACKWARDS === $transition) {
-                $stepNumber = $flow->getCurrentStepNumber() - 1;
-            }
-
-            return new Request($transition, $stepNumber ?? 0);
-        }
-
-        $transitions = \explode('_', $transition);
-        if (isset($transitions[0], $transitions[1])) {
-            [$action, $stepNumber] = $transitions;
-            if (Request::isValid($action) && \is_numeric($stepNumber) && $stepNumber > 0 && $stepNumber <= $flow->getSteps()->count()) {
-                return new Request($action, (int)$stepNumber);
-            }
-        }
-
-        throw new TransitionException($flow, \sprintf('"%s" is an invalid transition request.', $transition));
     }
 
     private function getHttpRequest(): HttpRequest
