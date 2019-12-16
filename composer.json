@@ -1,7 +1,7 @@
 {
     "name": "aeviiq/form-flow",
     "type": "library",
-    "description": "Form Flow Component",
+    "description": "A library that provides a basic form flow implementation.",
     "keywords": [
         "form-flow",
         "flow",

@@ -1,3 +1,12 @@
-# Form Flow Component (CONCEPT)
+# Aeviiq Form Flow
 
-## This component is a work in process.
+## Installation
+```
+composer require aeviiq/form-flow
+```
+
+## Declaration
+TODO
+
+## Usage
+TODO
