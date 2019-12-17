@@ -11,7 +11,6 @@ use Aeviiq\FormFlow\Event\TransitionedEvent;
 use Aeviiq\FormFlow\Event\TransitionEvent;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\TransitionException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
@@ -25,7 +24,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     private $requestStack;
 
     /**
-     * @var EventDispatcherInterface|EventDispatcher
+     * @var EventDispatcherInterface
      */
     private $dispatcher;
 
