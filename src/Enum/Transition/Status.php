@@ -61,10 +61,6 @@ final class Status extends AbstractFlag
 
     public function isFailed(): bool
     {
-        if (!$this->isSuccessful()) {
-            return false;
-        }
-
         return $this->contains(new self(self::FAILURE));
     }
 
