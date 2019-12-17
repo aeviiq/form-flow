@@ -31,7 +31,7 @@ class Context
     public function __construct(object $data, int $totalNumberOfSteps)
     {
         if ($totalNumberOfSteps < 2) {
-            throw new InvalidArgumentException(\sprintf('The total number of steps must be above 2. "%d" given.', $totalNumberOfSteps));
+            throw new InvalidArgumentException(\sprintf('The total number of steps must be 2 or more. "%d" given.', $totalNumberOfSteps));
         }
 
         $this->data = $data;
@@ -61,7 +61,7 @@ class Context
     {
         $stepNumber = $step->getNumber();
         if ($this->currentStepNumber < $stepNumber) {
-            throw new LogicException('Can not mark a step that is greater than the current step as completed.');
+            throw new LogicException('Can not mark a step that is greater than or equal to the current step as completed.');
         }
 
         $this->completedSteps[$stepNumber] = true;
