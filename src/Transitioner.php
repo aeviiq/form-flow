@@ -112,7 +112,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $context = $flow->getContext();
         $context->setCurrentStepNumber($currentStepNumber + 1);
         $context->markCompleted($currentStep);
-        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::FORWARDS, $flow, $currentStepNumber);
+        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_FORWARDS, $flow, $currentStepNumber);
         $flow->save();
 
         return new Status(Status::SUCCESS | Status::VALID_FORM);
@@ -142,7 +142,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $context = $flow->getContext();
         $context->markIncompleted($currentStep);
         $context->setCurrentStepNumber($currentStepNumber - 1);
-        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::BACKWARDS, $flow, $currentStepNumber);
+        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_BACKWARDS, $flow, $currentStepNumber);
         $flow->save();
 
         return new Status(Status::SUCCESS | Status::VALID_FORM);
