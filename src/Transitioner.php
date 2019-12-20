@@ -11,7 +11,6 @@ use Aeviiq\FormFlow\Event\TransitionedEvent;
 use Aeviiq\FormFlow\Event\TransitionEvent;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\TransitionException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
@@ -25,7 +24,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     private $requestStack;
 
     /**
-     * @var EventDispatcherInterface|EventDispatcher
+     * @var EventDispatcherInterface
      */
     private $dispatcher;
 
@@ -113,7 +112,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $context = $flow->getContext();
         $context->setCurrentStepNumber($currentStepNumber + 1);
         $context->markCompleted($currentStep);
-        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::FORWARDS, $flow, $currentStepNumber);
+        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_FORWARDS, $flow, $currentStepNumber);
         $flow->save();
 
         return new Status(Status::SUCCESS | Status::VALID_FORM);
@@ -143,7 +142,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $context = $flow->getContext();
         $context->markIncompleted($currentStep);
         $context->setCurrentStepNumber($currentStepNumber - 1);
-        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::BACKWARDS, $flow, $currentStepNumber);
+        $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_BACKWARDS, $flow, $currentStepNumber);
         $flow->save();
 
         return new Status(Status::SUCCESS | Status::VALID_FORM);

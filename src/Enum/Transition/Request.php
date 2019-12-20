@@ -26,7 +26,7 @@ final class Request extends AbstractEnum
     {
         parent::__construct($value);
         if ($requestedStepNumber < 0) {
-            throw new InvalidArgumentException(\sprintf('A requested step number must be above 0. "%s" given.', $requestedStepNumber));
+            throw new InvalidArgumentException(\sprintf('A requested step number must be greater than or equal to 0. "%s" given.', $requestedStepNumber));
         }
 
         if (self::FORWARDS === $value && $requestedStepNumber < 2) {

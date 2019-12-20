@@ -37,19 +37,19 @@ interface TransitionerInterface
      *
      * Fail conditions:
      *  - A forwards transition could 'fail' when the submitted form is invalid.
-     *  - A forwards transition could 'fail' when the fired TransitionEvent, gets blocked.
+     *  - A forwards transition could 'fail' when the fired TransitionEvent gets blocked.
      *
-     * This should always fire the following events (also see Aeviiq\FormFlow\FormFlowEvents):
+     * This should always fire the following events (see Aeviiq\FormFlow\FormFlowEvents):
      *     - Aeviiq\FormFlow\Event\TransitionEvent
      *     - Aeviiq\FormFlow\Event\TransitionedEvent
      *
      * Each of these events should fire a global, flow-specific and flow-step-specific event.
      *      e.g.:
-     *          global:             form_flow.pre_backwards
-     *          flow-specific:      form_flow.pre_backwards.flow_name
-     *          flow-step-specific: form_flow.pre_backwards.flow_name.step_1
+     *          global:             form_flow.pre_forwards
+     *          flow-specific:      form_flow.pre_forwards.flow_name
+     *          flow-step-specific: form_flow.pre_forwards.flow_name.step_1
      *
-     * When all was successful and this method can no longer fail, the current step (current as in, before this method was called)
+     * When all were successful and this method can no longer fail, the current step (current as in, before this method was called)
      * should be marked as complete in the context of the given flow.
      *
      * After updating the flow context to the new step number, a FormFlowInterface#save() should be called,
@@ -66,7 +66,7 @@ interface TransitionerInterface
      *  - A backwards transition could 'fail' when the fired TransitionEvent, gets blocked.
      *    * Unlike the TransitionerInterface#forwards(), an invalid form will not block this transition.
      *
-     * This should always fire the following events (also see Aeviiq\FormFlow\FormFlowEvents):
+     * This should always fire the following events (see Aeviiq\FormFlow\FormFlowEvents):
      *     - Aeviiq\FormFlow\Event\TransitionEvent
      *     - Aeviiq\FormFlow\Event\TransitionedEvent
      *
@@ -94,14 +94,14 @@ interface TransitionerInterface
      *  - A complete transition could 'fail' when the fired TransitionEvent, gets blocked.
      *  - A complete transition could 'fail' when one or more previous steps is not marked as completed in the context of the given flow.
      *
-     * This should always fire the following events (also see Aeviiq\FormFlow\FormFlowEvents):
+     * This should always fire the following events (see Aeviiq\FormFlow\FormFlowEvents):
      *     - Aeviiq\FormFlow\Event\TransitionEvent
      *     - Aeviiq\FormFlow\Event\CompletedEvent
      *
      * Each of these events should fire a global and flow-specific.
      *      e.g.:
-     *          global:             form_flow.pre_backwards
-     *          flow-specific:      form_flow.pre_backwards.flow_name
+     *          global:             form_flow.pre_complete
+     *          flow-specific:      form_flow.pre_complete.flow_name
      *
      * After firing the completed event, FormFlowInterface#reset() should be called.
      *
@@ -112,7 +112,7 @@ interface TransitionerInterface
     /**
      * Will reset the flow, removing any stored data and setting the current step back to the first one.
      *
-     * This should always fire the following events (also see Aeviiq\FormFlow\FormFlowEvents):
+     * This should always fire the following events (see Aeviiq\FormFlow\FormFlowEvents):
      *     - Aeviiq\FormFlow\Event\ResetEvent
      */
     public function reset(FormFlowInterface $flow): Status;

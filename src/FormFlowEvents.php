@@ -24,7 +24,7 @@ final class FormFlowEvents
      *
      * Aeviiq\FormFlow\Event\TransitionedEvent
      */
-    public const FORWARDS = 'form_flow.forwards';
+    public const POST_FORWARDS = 'form_flow.post_forwards';
 
     /**
      * This event is fired when the flow start to transition backwards.
@@ -39,7 +39,7 @@ final class FormFlowEvents
      *
      * Aeviiq\FormFlow\Event\TransitionedEvent
      */
-    public const BACKWARDS = 'form_flow.backwards';
+    public const POST_BACKWARDS = 'form_flow.post_backwards';
 
     /**
      * This event is fired when the flow transitioned forwards.
