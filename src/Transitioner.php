@@ -199,26 +199,35 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     }
 
     /**
-     * Fires up to 3 'sub' events per given event.
+     * Fires up to 3 'sub' events per given event and one for each of the form flow groups.
      */
     private function dispatch(Event $event, string $eventName, FormFlowInterface $flow, ?int $currentStepNumber = null): void
     {
         if (null !== $currentStepNumber) {
-            $this->dispatcher->dispatch($event, $this->createListenerStepId($eventName, $flow, $currentStepNumber));
+            $this->dispatcher->dispatch($event, $this->createStepListenerId($eventName, $flow, $currentStepNumber));
         }
 
-        $this->dispatcher->dispatch($event, $this->createFlowListener($eventName, $flow));
+        foreach ($flow->getGroups() as $group) {
+            $this->dispatcher->dispatch($event, $this->createGroupListenerId($eventName, $group));
+        }
+
+        $this->dispatcher->dispatch($event, $this->createFlowListenerId($eventName, $flow));
         $this->dispatcher->dispatch($event, $eventName);
     }
 
-    private function createListenerStepId(string $eventName, FormFlowInterface $flow, int $stepNumber): string
+    private function createStepListenerId(string $eventName, FormFlowInterface $flow, int $stepNumber): string
     {
         return \sprintf('%s.%s.step_%s', $eventName, $flow->getName(), $stepNumber);
     }
 
-    private function createFlowListener(string $eventName, FormFlowInterface $flow): string
+    private function createFlowListenerId(string $eventName, FormFlowInterface $flow): string
     {
         return \sprintf('%s.%s', $eventName, $flow->getName());
+    }
+
+    private function createGroupListenerId(string $eventName, string $group): string
+    {
+        return \sprintf('%s.%s', $eventName, $group);
     }
 
     private function submitForm(FormInterface $form): void
