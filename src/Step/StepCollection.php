@@ -11,15 +11,6 @@ use Aeviiq\Collection\ImmutableObjectCollection;
  */
 final class StepCollection extends ImmutableObjectCollection
 {
-    public function __construct(array $elements = [], string $iteratorClass = \ArrayIterator::class)
-    {
-        parent::__construct($elements, $iteratorClass);
-
-        $this->uasort(static function (StepInterface $a, StepInterface $b) {
-            return $a->getNumber() <=> $b->getNumber();
-        });
-    }
-
     public function getStepByNumber(int $number): StepInterface
     {
         return $this->getOneBy(static function (StepInterface $step) use ($number): bool {
@@ -56,5 +47,12 @@ final class StepCollection extends ImmutableObjectCollection
     protected function allowedInstance(): string
     {
         return StepInterface::class;
+    }
+
+    protected function onConstruct(): void
+    {
+        $this->uasort(static function (StepInterface $a, StepInterface $b) {
+            return $a->getNumber() <=> $b->getNumber();
+        });
     }
 }
