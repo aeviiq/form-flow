@@ -48,6 +48,9 @@ interface TransitionerInterface
      *          global:             form_flow.pre_forwards
      *          flow-specific:      form_flow.pre_forwards.flow_name
      *          flow-step-specific: form_flow.pre_forwards.flow_name.step_1
+     *          group-specific:     form_flow.pre_forwards.group_name_1
+     *
+     * An event is fired for each of the flow groups.
      *
      * When all were successful and this method can no longer fail, the current step (current as in, before this method was called)
      * should be marked as complete in the context of the given flow.
@@ -75,6 +78,9 @@ interface TransitionerInterface
      *          global:             form_flow.pre_backwards
      *          flow-specific:      form_flow.pre_backwards.flow_name
      *          flow-step-specific: form_flow.pre_backwards.flow_name.step_1
+     *          group-specific:     form_flow.pre_backwards.group_name_1
+     *
+     * An event is fired for each of the flow groups.
      *
      * When all was successful and this method can no longer fail, the current step (current as in, before this method was called)
      * should be marked as incomplete in the context of the given flow.
@@ -102,6 +108,9 @@ interface TransitionerInterface
      *      e.g.:
      *          global:             form_flow.pre_complete
      *          flow-specific:      form_flow.pre_complete.flow_name
+     *          group-specific:     form_flow.pre_complete.group_name_1
+     *
+     * An event is fired for each of the flow groups.
      *
      * After firing the completed event, FormFlowInterface#reset() should be called.
      *
