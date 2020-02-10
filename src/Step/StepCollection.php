@@ -3,7 +3,6 @@
 namespace Aeviiq\FormFlow\Step;
 
 use Aeviiq\Collection\ImmutableObjectCollection;
-use Aeviiq\FormFlow\Exception\LogicException;
 
 /**
  * @method \ArrayIterator|StepInterface[] getIterator
@@ -52,10 +51,6 @@ final class StepCollection extends ImmutableObjectCollection
 
     protected function onConstruct(): void
     {
-        if (2 > $this->count()) {
-            throw new LogicException('A Step Collection must have 2 or more steps.');
-        }
-        
         $this->uasort(static function (StepInterface $a, StepInterface $b) {
             return $a->getNumber() <=> $b->getNumber();
         });
