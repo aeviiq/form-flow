@@ -24,9 +24,19 @@ class Context
     private $totalNumberOfSteps;
 
     /**
-     * @var bool[]
+     * @var array<int, bool>
      */
     private $completedSteps = [];
+
+    /**
+     * @var array<int, bool>
+     */
+    private $softSkippedSteps = [];
+
+    /**
+     * @var array<int, bool>
+     */
+    private $hardSkippedSteps = [];
 
     public function __construct(object $data, int $totalNumberOfSteps)
     {
@@ -57,17 +67,21 @@ class Context
         $this->currentStepNumber = $currentStepNumber;
     }
 
-    public function markCompleted(StepInterface $step): void
+    public function setCompleted(StepInterface $step): void
     {
         $stepNumber = $step->getNumber();
+        if ($stepNumber < 1 || $stepNumber > $this->totalNumberOfSteps) {
+            throw new LogicException(sprintf('Step number "%d" is invalid for this context.', $stepNumber));
+        }
+
         if ($this->currentStepNumber < $stepNumber) {
-            throw new LogicException('Can not mark a step that is greater than or equal to the current step as completed.');
+            throw new LogicException('Can not complete a step that is greater than or equal to the current step.');
         }
 
         $this->completedSteps[$stepNumber] = true;
     }
 
-    public function markIncompleted(StepInterface $step): void
+    public function unsetCompleted(StepInterface $step): void
     {
         unset($this->completedSteps[$step->getNumber()]);
     }
@@ -75,5 +89,64 @@ class Context
     public function isCompleted(StepInterface $step): bool
     {
         return $this->completedSteps[$step->getNumber()] ?? false;
+    }
+
+    /**
+     * @throws LogicException When the step contains an illegal step number.
+     */
+    public function setSoftSkipped(StepInterface $step): void
+    {
+        $this->validateSkipRequest($step);
+        $this->softSkippedSteps[$step->getNumber()] = true;
+    }
+
+    public function unsetSoftSkipped(StepInterface $step): void
+    {
+        unset($this->softSkippedSteps[$step->getNumber()]);
+    }
+
+    public function isSoftSkipped(StepInterface $step): bool
+    {
+        return $this->softSkippedSteps[$step->getNumber()] ?? false;
+    }
+
+    /**
+     * @throws LogicException When the step contains an illegal step number.
+     */
+    public function setHardSkipped(StepInterface $step): void
+    {
+        $this->validateSkipRequest($step);
+        $this->hardSkippedSteps[$step->getNumber()] = true;
+    }
+
+    public function unsetHardSkipped(StepInterface $step): void
+    {
+        unset($this->hardSkippedSteps[$step->getNumber()]);
+    }
+
+    public function isHardSkipped(StepInterface $step): bool
+    {
+        return $this->hardSkippedSteps[$step->getNumber()] ?? false;
+    }
+
+    public function isSkipped(StepInterface $step): bool
+    {
+        return $this->isSoftSkipped($step) || $this->isHardSkipped($step);
+    }
+
+    private function validateSkipRequest(StepInterface $step): void
+    {
+        $stepNumber = $step->getNumber();
+        if ($stepNumber < 1 || $stepNumber > $this->totalNumberOfSteps) {
+            throw new LogicException(sprintf('Step number "%d" is invalid for this context.', $stepNumber));
+        }
+
+        if ($stepNumber < 2) {
+            throw new LogicException('It is not yet possible to skip the first step of a form flow.');
+        }
+
+        if ($stepNumber === $this->totalNumberOfSteps) {
+            throw new LogicException('It is not possible to skip the last step of a form flow.');
+        }
     }
 }

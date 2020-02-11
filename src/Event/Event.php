@@ -10,15 +10,15 @@ class Event extends BaseEvent
     /**
      * @var FormFlowInterface
      */
-    private $formFlow;
+    private $flow;
 
-    public function __construct(FormFlowInterface $formFlow)
+    public function __construct(FormFlowInterface $flow)
     {
-        $this->formFlow = $formFlow;
+        $this->flow = $flow;
     }
 
-    public function getFormFlow(): FormFlowInterface
+    public function getFlow(): FormFlowInterface
     {
-        return $this->formFlow;
+        return $this->flow;
     }
 }

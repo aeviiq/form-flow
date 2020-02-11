@@ -61,6 +61,19 @@ final class FormFlowEvents
     public const COMPLETED = 'form_flow.completed';
 
     /**
+     * This event is fired when the flow is almost done transitioning forwards.
+     * A step can only be skipped if it is the next step and not the last one.
+     *
+     * Typical use cases for this event could be:
+     *  - Optional steps.
+     *  - Store the data as a placed order.
+     *  - Send a confirmation mail to the user.
+     *
+     * Aeviiq\FormFlow\Event\CompleteEvent
+     */
+    public const SKIP = 'form_flow.skip';
+
+    /**
      * This event is fired when the flow has reset.
      *
      * Aeviiq\FormFlow\Event\ResetEvent

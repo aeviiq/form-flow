@@ -136,9 +136,7 @@ final class FormFlow implements FormFlowInterface
             throw new LogicException('There is no next step.');
         }
 
-        return $this->getSteps()
-            ->filterStepsGreaterThanNumber($this->getCurrentStepNumber())
-            ->last();
+        return $this->getSteps()->getStepByNumber($this->getCurrentStepNumber() + 1);
     }
 
     public function hasNextStep(): bool
@@ -164,12 +162,16 @@ final class FormFlow implements FormFlowInterface
 
     public function getFirstStep(): StepInterface
     {
-        return $this->getSteps()->first();
+        $steps = $this->getSteps();
+
+        return $steps->getStepByNumber(1);
     }
 
     public function getLastStep(): StepInterface
     {
-        return $this->getSteps()->last();
+        $steps = $this->getSteps();
+
+        return $steps->getStepByNumber($steps->count());
     }
 
     public function getTransitionKey(): string

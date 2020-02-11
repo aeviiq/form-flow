@@ -7,6 +7,7 @@ use Aeviiq\FormFlow\Enum\Transition\Status;
 use Aeviiq\FormFlow\Event\CompletedEvent;
 use Aeviiq\FormFlow\Event\Event;
 use Aeviiq\FormFlow\Event\ResetEvent;
+use Aeviiq\FormFlow\Event\SkipEvent;
 use Aeviiq\FormFlow\Event\TransitionedEvent;
 use Aeviiq\FormFlow\Event\TransitionEvent;
 use Aeviiq\FormFlow\Exception\LogicException;
@@ -110,8 +111,28 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         }
 
         $context = $flow->getContext();
-        $context->setCurrentStepNumber($currentStepNumber + 1);
-        $context->markCompleted($currentStep);
+        $context->setCompleted($currentStep);
+        $increment = 1;
+        if ($currentStepNumber < $flow->getSteps()->count()) {
+            $skipEvent = new SkipEvent($flow);
+            $this->dispatcher->dispatch($skipEvent, $this->createStepListenerId(FormFlowEvents::SKIP, $flow, $currentStepNumber));
+            $nextStep = $flow->getNextStep();
+            if ($skipEvent->isHardSkipped()) {
+                $context->setHardSkipped($nextStep);
+                ++$increment;
+            } else {
+                $context->unsetHardSkipped($nextStep);
+            }
+
+            if ($skipEvent->isSoftSkipped()) {
+                $context->setSoftSkipped($nextStep);
+                ++$increment;
+            } else {
+                $context->unsetSoftSkipped($nextStep);
+            }
+        }
+
+        $context->setCurrentStepNumber($currentStepNumber + $increment);
         $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_FORWARDS, $flow, $currentStepNumber);
         $flow->save();
 
@@ -140,8 +161,13 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         }
 
         $context = $flow->getContext();
-        $context->markIncompleted($currentStep);
-        $context->setCurrentStepNumber($currentStepNumber - 1);
+        $context->unsetCompleted($currentStep);
+        $decrement = 1;
+        while ($context->isHardSkipped($flow->getSteps()->getStepByNumber($currentStepNumber - $decrement))) {
+            ++$decrement;
+        }
+
+        $context->setCurrentStepNumber($currentStepNumber - $decrement);
         $this->dispatch(new TransitionedEvent($flow), FormFlowEvents::POST_BACKWARDS, $flow, $currentStepNumber);
         $flow->save();
 
@@ -165,7 +191,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
 
         $context = $flow->getContext();
         foreach ($flow->getSteps()->filterStepsSmallerThanNumber($flow->getCurrentStepNumber()) as $previousStep) {
-            if (!$context->isCompleted($previousStep)) {
+            if (!$context->isCompleted($previousStep) && !$context->isSkipped($previousStep)) {
                 return new Status(Status::FAILURE);
             }
         }
