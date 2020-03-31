@@ -113,26 +113,29 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $context = $flow->getContext();
         $context->setCompleted($currentStep);
         $increment = 1;
-        if ($currentStepNumber < $flow->getSteps()->count()) {
-            $skipEvent = new SkipEvent($flow);
-            $this->dispatcher->dispatch($skipEvent, $this->createStepListenerId(FormFlowEvents::SKIP, $flow, $currentStepNumber));
-            $nextStep = $flow->getNextStep();
-            if ($skipEvent->isHardSkipped() && $skipEvent->isSoftSkipped()) {
-                throw new LogicException('A step can not be both hard and soft skipped.');
-            }
+        for ($i = 0; $i < $increment; $i++) {
+            $skippingStepNumber = $currentStepNumber + $i;
+            if ($skippingStepNumber < $flow->getSteps()->count()) {
+                $skipEvent = new SkipEvent($flow);
+                $this->dispatcher->dispatch($skipEvent, $this->createStepListenerId(FormFlowEvents::SKIP, $flow, $skippingStepNumber));
+                $nextStep = $flow->getSteps()->getStepByNumber($skippingStepNumber + 1);
+                if ($skipEvent->isHardSkipped() && $skipEvent->isSoftSkipped()) {
+                    throw new LogicException('A step can not be both hard and soft skipped.');
+                }
 
-            if ($skipEvent->isHardSkipped()) {
-                $context->setHardSkipped($nextStep);
-                ++$increment;
-            } else {
-                $context->unsetHardSkipped($nextStep);
-            }
+                if ($skipEvent->isHardSkipped()) {
+                    $context->setHardSkipped($nextStep);
+                    ++$increment;
+                } else {
+                    $context->unsetHardSkipped($nextStep);
+                }
 
-            if ($skipEvent->isSoftSkipped()) {
-                $context->setSoftSkipped($nextStep);
-                ++$increment;
-            } else {
-                $context->unsetSoftSkipped($nextStep);
+                if ($skipEvent->isSoftSkipped()) {
+                    $context->setSoftSkipped($nextStep);
+                    ++$increment;
+                } else {
+                    $context->unsetSoftSkipped($nextStep);
+                }
             }
         }
 
