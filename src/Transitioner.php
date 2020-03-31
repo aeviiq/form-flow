@@ -117,6 +117,10 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
             $skipEvent = new SkipEvent($flow);
             $this->dispatcher->dispatch($skipEvent, $this->createStepListenerId(FormFlowEvents::SKIP, $flow, $currentStepNumber));
             $nextStep = $flow->getNextStep();
+            if ($skipEvent->isHardSkipped() && $skipEvent->isSoftSkipped()) {
+                throw new LogicException('A step can not be both hard and soft skipped.');
+            }
+
             if ($skipEvent->isHardSkipped()) {
                 $context->setHardSkipped($nextStep);
                 ++$increment;
