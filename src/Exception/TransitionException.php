@@ -17,6 +17,9 @@ final class TransitionException extends \RuntimeException implements ExceptionIn
         $this->flow = $flow;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getFlow(): FormFlowInterface
     {
         return $this->flow;
