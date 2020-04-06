@@ -80,6 +80,9 @@ final class FormFlowEvents
      */
     public const RESET = 'form_flow.reset';
 
+    /**
+     * @codeCoverageIgnore
+     */
     private function __construct()
     {
     }

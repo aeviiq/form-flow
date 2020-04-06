@@ -55,6 +55,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         }
 
         $request = Request::createByHttpRequestAndFlow($this->getHttpRequest(), $flow);
+        $status = new Status(Status::FAILURE);
         switch ($request->getValue()) {
             case (Request::FORWARDS):
                 // For now, we don't support multiple forwards transitions.
@@ -80,8 +81,6 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
             case (Request::RESET):
                 $status = $this->reset($flow);
                 break;
-            default:
-                $status = new Status(Status::FAILURE);
         }
 
         return $status;
