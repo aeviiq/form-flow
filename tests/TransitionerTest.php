@@ -3,8 +3,7 @@
 namespace Aeviiq\FormFlow\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class TransitionerTest extends TestCase
 {
@@ -57,41 +56,14 @@ final class TransitionerTest extends TestCase
 
     private function createMockedEventDispatcher(): EventDispatcherInterface
     {
-        return new class() implements EventDispatcherInterface
-        {
+        return new class() implements EventDispatcherInterface {
             public $dispatchedEvents = [];
 
-            public function addListener($eventName, $listener, $priority = 0): void
-            {
-            }
-
-            public function addSubscriber(EventSubscriberInterface $subscriber): void
-            {
-            }
-
-            public function removeListener($eventName, $listener): void
-            {
-            }
-
-            public function removeSubscriber(EventSubscriberInterface $subscriber): void
-            {
-            }
-
-            public function getListeners($eventName = null)
-            {
-            }
-
-            public function dispatch($event, string $eventName = null)
+            public function dispatch(object $event, string $eventName = null): object
             {
                 $this->dispatchedEvents[] = $eventName;
-            }
 
-            public function getListenerPriority($eventName, $listener)
-            {
-            }
-
-            public function hasListeners($eventName = null)
-            {
+                return $event;
             }
         };
     }
