@@ -12,10 +12,10 @@ use Aeviiq\FormFlow\Event\TransitionedEvent;
 use Aeviiq\FormFlow\Event\TransitionEvent;
 use Aeviiq\FormFlow\Exception\LogicException;
 use Aeviiq\FormFlow\Exception\TransitionException;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class Transitioner implements TransitionerInterface, RequestStackAwareInterface
 {

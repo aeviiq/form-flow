@@ -30,9 +30,9 @@
         "aeviiq/collection": "^3.2",
         "aeviiq/storage-manager": "^3.0",
         "aeviiq/enum": "^2.0",
-        "symfony/form": "^4.3",
-        "symfony/event-dispatcher": "^4.3",
-        "symfony/http-foundation": "^4.3"
+        "symfony/form": "^4.3|^5.0",
+        "symfony/http-foundation": "^4.3|^5.0",
+        "symfony/event-dispatcher-contracts": "^1.0|^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.2"

@@ -20,13 +20,12 @@ use Aeviiq\FormFlow\Transitioner;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Constraint\Callback;
 use PHPUnit\Framework\Constraint\Constraint;
-use PHPUnit\Framework\Constraint\IsInstanceOf;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class TransitionerTest extends TestCase
 {
@@ -123,10 +122,12 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.group-1'],
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name'],
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards']
-        )->willReturnCallback(static function (Event $event, string $eventName): void {
+        )->willReturnCallback(static function (Event $event, string $eventName): object {
             if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
                 $event->hardSkip();
             }
+
+            return $event;
         });
 
         $status = $this->transitioner->transition($this->flow);
@@ -152,10 +153,12 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.group-1'],
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name'],
             [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards']
-        )->willReturnCallback(static function (Event $event, string $eventName): void {
+        )->willReturnCallback(static function (Event $event, string $eventName): object {
             if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
                 $event->softSkip();
             }
+
+            return $event;
         });
 
         $status = $this->transitioner->transition($this->flow);
@@ -174,11 +177,13 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards'],
             [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_1']
-        )->willReturnCallback(static function (Event $event, string $eventName): void {
+        )->willReturnCallback(static function (Event $event, string $eventName): object {
             if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
                 $event->hardSkip();
                 $event->softSkip();
             }
+
+            return $event;
         });
 
         $this->expectException(LogicException::class);
@@ -217,8 +222,10 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards']
-        )->willReturnCallback(static function (TransitionEvent $event): void {
+        )->willReturnCallback(static function (TransitionEvent $event): object {
             $event->blockTransition();
+
+            return $event;
         });
 
         $status = $this->transitioner->transition($this->flow);
@@ -271,8 +278,10 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.group-1'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.some-name'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards']
-        )->willReturnCallback(static function (TransitionEvent $event): void {
+        )->willReturnCallback(static function (TransitionEvent $event): object {
             $event->blockTransition();
+
+            return $event;
         });
 
         $status = $this->transitioner->transition($this->flow);
@@ -326,8 +335,10 @@ final class TransitionerTest extends TestCase
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.group-1'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.some-name'],
             [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete']
-        )->willReturnCallback(static function (TransitionEvent $event): void {
+        )->willReturnCallback(static function (TransitionEvent $event): object {
             $event->blockTransition();
+
+            return $event;
         });
 
         $status = $this->transitioner->transition($this->flow);
