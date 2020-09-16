@@ -107,6 +107,8 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $event = new TransitionEvent($flow);
         $this->dispatch($event, FormFlowEvents::PRE_FORWARDS, $flow, $currentStepNumber);
         if ($event->isTransitionBlocked()) {
+            $flow->save();
+
             return new Status(Status::FAILURE | Status::VALID_FORM | Status::BLOCKED);
         }
 
@@ -164,6 +166,8 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
         $event = new TransitionEvent($flow);
         $this->dispatch($event, FormFlowEvents::PRE_BACKWARDS, $flow, $currentStepNumber);
         if ($event->isTransitionBlocked()) {
+            $flow->save();
+
             return new Status(Status::FAILURE | Status::BLOCKED | $status);
         }
 
@@ -205,7 +209,9 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
 
         $event = new TransitionEvent($flow);
         $this->dispatch($event, FormFlowEvents::PRE_COMPLETE, $flow);
-        if ($event->isTransitionBlocked()) {
+        if ($event->isTransitionBlocked()) {            
+            $flow->save();
+
             return new Status(Status::FAILURE | Status::VALID_FORM | Status::BLOCKED);
         }
 
