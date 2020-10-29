@@ -14,10 +14,7 @@ use Symfony\Component\Form\FormInterface;
 
 final class FormFlow implements FormFlowInterface
 {
-    /**
-     * @var string
-     */
-    private static $storageKey = 'form_flow.storage.%s';
+    public const STORAGE_KEY_PREFIX = 'form_flow.storage.%s';
 
     /**
      * @var StorageManagerInterface
@@ -43,6 +40,11 @@ final class FormFlow implements FormFlowInterface
      * @var FormInterface[]
      */
     private $forms = [];
+
+    /**
+     * @var string|null
+     */
+    private $storageKey;
 
     public function __construct(
         StorageManagerInterface $storageManager,
@@ -197,17 +199,26 @@ final class FormFlow implements FormFlowInterface
         return $this->getFormByStep($this->getSteps()->getStepByNumber($stepNumber));
     }
 
+    public function setStorageKey(?string $storageKey): void
+    {
+        $this->storageKey = $storageKey;
+    }
+
+    public function getStorageKey(): string
+    {
+        if (null === $this->storageKey || '' === $this->storageKey) {
+            return \sprintf(self::STORAGE_KEY_PREFIX, $this->getName());
+        }
+
+        return \sprintf(self::STORAGE_KEY_PREFIX . '.%s', $this->getName(), $this->storageKey);
+    }
+
     private function checkExpectedInstance(object $data): void
     {
         $expectedInstance = $this->definition->getExpectedDataInstance();
         if (!($data instanceof $expectedInstance)) {
             throw new InvalidArgumentException(\sprintf('The data must be an instanceof %s, %s given.', $expectedInstance, \get_class($data)));
         }
-    }
-
-    private function getStorageKey(): string
-    {
-        return \sprintf(self::$storageKey, $this->getName());
     }
 
     private function initialize(): void

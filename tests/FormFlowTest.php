@@ -302,6 +302,16 @@ final class FormFlowTest extends TestCase
         $flow->getFormByStepNumber(1);
     }
 
+    public function testGetStorageKey(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
+        $flow->setStorageKey('12345');
+        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX . '.%s', $flow->getName(), '12345'), $flow->getStorageKey());
+        $flow->setStorageKey(null);
+        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
+    }
+
     protected function setUp(): void
     {
         $this->mockedStorageManager = $this->createMock(StorageManagerInterface::class);
