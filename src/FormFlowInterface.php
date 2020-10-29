@@ -37,4 +37,8 @@ interface FormFlowInterface extends StartableInterface, SteppableInterface, Rese
     public function getFormByStepNumber(int $stepNumber): FormInterface;
 
     public function getCurrentStepNumber(): int;
+
+    public function setStorageKey(?string $storageKey): void;
+
+    public function getStorageKey(): string;
 }
