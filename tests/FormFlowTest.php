@@ -312,6 +312,15 @@ final class FormFlowTest extends TestCase
         $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
     }
 
+    public function testGetStorageKeyWithContextPresent(): void
+    {
+        $flow = $this->createDefaultFormFlow();
+        $flow->start(new stdClass());
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The storage key cannot be changed after the flow has context.');
+        $flow->setStorageKey('12345');
+    }
+
     protected function setUp(): void
     {
         $this->mockedStorageManager = $this->createMock(StorageManagerInterface::class);
