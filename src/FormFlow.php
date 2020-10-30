@@ -201,7 +201,13 @@ final class FormFlow implements FormFlowInterface
 
     public function setStorageKey(?string $storageKey): void
     {
+        if (null !== $this->context) {
+            throw new LogicException(\sprintf('The storage key cannot be changed after the flow has context.'));
+        }
+
         $this->storageKey = $storageKey;
+
+        $this->initialize();
     }
 
     public function getStorageKey(): string
