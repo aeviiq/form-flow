@@ -40,7 +40,8 @@ final class FormFlowTest extends TestCase
         $this->mockedStorageManager->expects(self::once())->method('load')
             ->with('form_flow.storage.form_flow')->willReturn($this->createStub(Context::class));
 
-        $this->createDefaultFormFlow();
+        $flow = $this->createDefaultFormFlow();
+        self::assertTrue($flow->isStarted());
     }
 
     public function testInitializeWithCorruptedContext(): void
@@ -52,7 +53,8 @@ final class FormFlowTest extends TestCase
 
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('The stored context is corrupted.');
-        $this->createDefaultFormFlow();
+        $flow = $this->createDefaultFormFlow();
+        self::assertTrue($flow->isStarted());
     }
 
     public function testStartWhenFlowIsAlreadyStarted(): void
