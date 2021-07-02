@@ -54,11 +54,14 @@ final class FormFlow implements FormFlowInterface
         $this->storageManager = $storageManager;
         $this->formFactory = $formFactory;
         $this->definition = $definition;
-        $this->initialize();
     }
 
     public function isStarted(): bool
     {
+        if (null === $this->context) {
+            $this->initialize();
+        }
+
         return null !== $this->context;
     }
 
@@ -74,7 +77,7 @@ final class FormFlow implements FormFlowInterface
 
     public function getContext(): Context
     {
-        if (null === $this->context) {
+        if (!$this->isStarted()) {
             throw new LogicException('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         }
 
