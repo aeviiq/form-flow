@@ -473,6 +473,7 @@ final class TransitionerTest extends TestCase
         $form = $this->createStub(FormInterface::class);
         $form->method('isValid')->willReturn($valid);
         $form->method('isSubmitted')->willReturn($submitted);
+        $form->method('getName')->willReturn('form_name');
 
         $this->flow->method('getCurrentStepForm')->willReturn($form);
     }
