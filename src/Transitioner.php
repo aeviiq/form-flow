@@ -264,8 +264,9 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
 
     private function submitForm(FormInterface $form): void
     {
-        if (!$form->isSubmitted()) {
-            $form->handleRequest($this->getHttpRequest());
+        $httpRequest = $this->getHttpRequest();
+        if ($httpRequest->request->has($form->getName()) && !$form->isSubmitted()) {
+            $form->handleRequest($httpRequest);
         }
     }
 
