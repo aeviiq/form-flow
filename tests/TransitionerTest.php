@@ -23,6 +23,7 @@ use PHPUnit\Framework\Constraint\Constraint;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -211,7 +212,7 @@ final class TransitionerTest extends TestCase
         $this->transitioner->forwards($this->flow);
     }
 
-    public function testTransitionFormwardWithBlockedTransition(): void
+    public function testTransitionForwardWithBlockedTransition(): void
     {
         $this->setCurrentRequest($this->createHttpRequest('forwards'));
         $this->setCurrentStepNumber(1);
@@ -483,10 +484,13 @@ final class TransitionerTest extends TestCase
 
     private function createHttpRequest(string $action): HttpRequest
     {
-        $request = $this->createMock(HttpRequest::class);
-        $request->method('get')->with('some-trans-key')->willReturn($action);
+        $httpRequest = $this->createMock(HttpRequest::class);
+        $httpRequest->method('get')->with('some-trans-key')->willReturn($action);
+        $request = $this->createMock(ParameterBag::class);
+        $request->method('has')->willReturn(true);
+        $httpRequest->request = $request;
 
-        return $request;
+        return $httpRequest;
     }
 
     private function assertFlowEvent(string $expectedInstance): Constraint
