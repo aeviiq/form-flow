@@ -90,7 +90,7 @@ interface TransitionerInterface
      *
      * @throws TransitionException When the current step is the first step.
      */
-    public function backwards(FormFlowInterface $flow): Status;
+    public function backwards(FormFlowInterface $flow, bool $handleForm = true): Status;
 
     /**
      * Attempts to complete the given flow.

@@ -68,8 +68,10 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
                     throw new TransitionException($flow, \sprintf('"%s" is an invalid requested step number in the current context.', $requestedStepNumber));
                 }
 
+                $handleForm = true;
                 while ($flow->getCurrentStepNumber() > $requestedStepNumber) {
-                    $status = $this->backwards($flow);
+                    $status = $this->backwards($flow, $handleForm);
+                    $handleForm = false;
                     if (!$status->isSuccessful()) {
                         break;
                     }
@@ -148,16 +150,19 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
     /**
      * {@inheritDoc}
      */
-    public function backwards(FormFlowInterface $flow): Status
+    public function backwards(FormFlowInterface $flow, bool $handleForm = true): Status
     {
         $currentStep = $flow->getCurrentStep();
         if ($flow->getCurrentStep() === $flow->getFirstStep()) {
             throw new TransitionException($flow, 'The flow is on the first step and can not transition backwards.');
         }
 
-        $form = $flow->getCurrentStepForm();
-        $this->submitForm($form);
-        $status = !$form->isSubmitted() || !$form->isValid() ? Status::INVALID_FORM : Status::VALID_FORM;
+        $status = Status::UNHANDLED_FORM;
+        if ($handleForm) {
+            $form = $flow->getCurrentStepForm();
+            $this->submitForm($form);
+            $status = !$form->isSubmitted() || !$form->isValid() ? Status::INVALID_FORM : Status::VALID_FORM;
+        }
 
         $currentStepNumber = $currentStep->getNumber();
         $event = new TransitionEvent($flow);
