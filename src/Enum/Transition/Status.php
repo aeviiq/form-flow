@@ -21,6 +21,8 @@ final class Status extends AbstractFlag
 
     public const INVALID_FORM = 64;
 
+    public const UNHANDLED_FORM = 128;
+
     /**
      * @throws InvalidArgumentException When the given value contains an invalid flag combination.
      */
@@ -50,6 +52,13 @@ final class Status extends AbstractFlag
             throw new InvalidArgumentException('A transition status can not be valid form and invalid form at the same time.');
         }
 
+        if ($this->isFlagSet($value, self::VALID_FORM) && $this->isFlagSet($value, self::UNHANDLED_FORM)) {
+            throw new InvalidArgumentException('A transition status can not be valid form and unhandled form at the same time.');
+        }
+
+        if ($this->isFlagSet($value, self::INVALID_FORM) && $this->isFlagSet($value, self::UNHANDLED_FORM)) {
+            throw new InvalidArgumentException('A transition status can not be invalid form and unhandled form at the same time.');
+        }
 
         parent::__construct($value);
     }
@@ -82,5 +91,10 @@ final class Status extends AbstractFlag
     public function isFormValid(): bool
     {
         return $this->contains(new self(self::VALID_FORM));
+    }
+
+    public function isUnhandledForm(): bool
+    {
+        return $this->contains(new self(self::UNHANDLED_FORM));
     }
 }

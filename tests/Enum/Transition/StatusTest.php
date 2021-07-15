@@ -50,6 +50,14 @@ final class StatusTest extends TestCase
                 Status::VALID_FORM | Status::INVALID_FORM,
                 'A transition status can not be valid form and invalid form at the same time.',
             ],
+            'valid_form and unhandled_form' => [
+                Status::VALID_FORM | Status::UNHANDLED_FORM,
+                'A transition status can not be valid form and unhandled form at the same time.',
+            ],
+            'invalid_form and unhandled_form' => [
+                Status::INVALID_FORM | Status::UNHANDLED_FORM,
+                'A transition status can not be invalid form and unhandled form at the same time.',
+            ],
         ];
     }
 
