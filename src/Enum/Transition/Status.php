@@ -97,4 +97,9 @@ final class Status extends AbstractFlag
     {
         return $this->contains(new self(self::UNHANDLED_FORM));
     }
+
+    private function isFlagSet(int $flags, int $flag): bool
+    {
+        return ($flag & $flags) === $flag;
+    }
 }
