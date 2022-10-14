@@ -1,31 +1,27 @@
 name: Build
 
-on: [pull_request, push]
+on: [ pull_request, push ]
 
 jobs:
-    build:
-        name: Build - PHP ${{ matrix.php-versions }}
+    phpunit:
+        name: PHPUnit - PHP ${{ matrix.php-versions }}
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                php-versions: [ '7.2', '7.3', '7.4', '8.0' ]
+                php-versions: [ '8.1' ]
         steps:
-            -   name: Setup PHP, with composer and extensions
-                uses: shivammathur/setup-php@v1
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
                 with:
                     php-version: ${{ matrix.php-versions }}
-
-            -   uses: actions/checkout@v1
-
-            -   name: Validate composer.json and composer.lock
-                run: |
-                    composer clear-cache
-                    composer validate
-
-            -   name: Install dependencies
-                run: |
-                    composer install --prefer-dist --no-progress --no-suggest
-
-            -   name: PHPUnit
-                run: |
-                    composer run phpunit
+                    coverage: none
+            -   id: composer-cache
+                run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            -   uses: actions/cache@v2
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-
+            -   run: composer install --no-interaction
+            -   run: vendor/bin/phpunit
