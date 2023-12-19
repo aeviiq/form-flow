@@ -75,7 +75,7 @@ final class StepCollectionTest extends TestCase
 
     private function createStepInstance(int $number): StepInterface
     {
-        $step = $this->createStub(StepInterface::class);
+        $step = self::createStub(StepInterface::class);
         $step->method('getNumber')->willReturn($number);
 
         return $step;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow;
 
@@ -9,43 +11,22 @@ use Aeviiq\FormFlow\Step\StepInterface;
 class Context
 {
     /**
-     * @var object
+     * @param array<int, bool> $completedSteps
+     * @param array<int, bool> $softSkippedSteps
+     * @param array<int, bool> $hardSkippedSteps
      */
-    private $data;
-
-    /**
-     * @var int
-     */
-    private $currentStepNumber = 1;
-
-    /**
-     * @var int
-     */
-    private $totalNumberOfSteps;
-
-    /**
-     * @var array<int, bool>
-     */
-    private $completedSteps = [];
-
-    /**
-     * @var array<int, bool>
-     */
-    private $softSkippedSteps = [];
-
-    /**
-     * @var array<int, bool>
-     */
-    private $hardSkippedSteps = [];
-
-    public function __construct(object $data, int $totalNumberOfSteps)
+    public function __construct(
+        private readonly object $data,
+        private readonly int $totalNumberOfSteps,
+        private int $currentStepNumber = 1,
+        private array $completedSteps = [],
+        private array $softSkippedSteps = [],
+        private array $hardSkippedSteps = []
+    )
     {
         if ($totalNumberOfSteps < 2) {
             throw new InvalidArgumentException(\sprintf('The total number of steps must be 2 or more. "%d" given.', $totalNumberOfSteps));
         }
-
-        $this->data = $data;
-        $this->totalNumberOfSteps = $totalNumberOfSteps;
     }
 
     public function getData(): object

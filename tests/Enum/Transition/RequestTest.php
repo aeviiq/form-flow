@@ -90,19 +90,19 @@ final class RequestTest extends TestCase
         $httpRequest = $this->createHttpRequest('another_1');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('"another_1" is an invalid transition request for flow "some-name".');
+        $this->expectExceptionMessage('Invalid transition request for flow "some-name".');
         Request::createByHttpRequestAndFlow($httpRequest, $flow);
     }
 
     private function createFlow(int $currentStep): FormFlowInterface
     {
-        $flow = $this->createStub(FormFlowInterface::class);
+        $flow = self::createStub(FormFlowInterface::class);
         $flow->method('getName')->willReturn('some-name');
         $flow->method('getCurrentStepNumber')->willReturn($currentStep);
         $flow->method('getTransitionKey')->willReturn('some-trans-key');
         $flow->method('getSteps')->willReturn(new StepCollection([
-            $this->createStub(StepInterface::class),
-            $this->createStub(StepInterface::class),
+            self::createStub(StepInterface::class),
+            self::createStub(StepInterface::class),
         ]));
 
         return $flow;

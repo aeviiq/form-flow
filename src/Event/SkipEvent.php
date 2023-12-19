@@ -1,18 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Event;
 
 final class SkipEvent extends Event
 {
-    /**
-     * @var bool
-     */
-    private $softSkipped = false;
+    private bool $softSkipped = false;
 
-    /**
-     * @var bool
-     */
-    private $hardSkipped = false;
+    private bool $hardSkipped = false;
 
     public function isSoftSkipped(): bool
     {

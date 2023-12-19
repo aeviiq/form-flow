@@ -230,7 +230,7 @@ final class ContextTest extends TestCase
 
     private function createStep(int $stepNumber): StepInterface
     {
-        $step = $this->createStub(StepInterface::class);
+        $step = self::createStub(StepInterface::class);
         $step->method('getNumber')->willReturn($stepNumber);
 
         return $step;
