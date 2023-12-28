@@ -27,7 +27,7 @@
     },
     "require": {
         "php": "^8.1",
-        "aeviiq/collection": "^3.6",
+        "aeviiq/collection": "^4.0",
         "aeviiq/storage-manager": "^6.0",
         "aeviiq/enum": "^3.0",
         "symfony/form": "^6.0",
