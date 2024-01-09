@@ -1,6 +1,10 @@
-name: Build
+name: Quality Assurance
 
-on: [ pull_request, push ]
+on:
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
 
 jobs:
     phpunit:
@@ -25,3 +29,43 @@ jobs:
                         ${{ runner.os }}-composer-
             -   run: composer install --no-interaction
             -   run: vendor/bin/phpunit
+
+    phpstan:
+        name: PHPStan - PHP ${{ matrix.php-versions }}
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php-versions: [ '8.1' ]
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php-versions }}
+                    coverage: none
+            -   id: composer-cache
+                run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            -   uses: ramsey/composer-install@v1
+            -   run: vendor/bin/phpstan analyse --error-format=github
+
+    psalm:
+        name: Psalm - PHP ${{ matrix.php-versions }}
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php-versions: [ '8.1' ]
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php-versions }}
+                    coverage: none
+            -   id: composer-cache
+                run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            -   uses: actions/cache@v2
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-
+            -   run: composer install --no-interaction
+            -   run: vendor/bin/psalm --output-format=github
