@@ -10,6 +10,7 @@ use Aeviiq\FormFlow\FormFlowInterface;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Aeviiq\FormFlow\Step\StepInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
 final class RequestTest extends TestCase
@@ -110,9 +111,10 @@ final class RequestTest extends TestCase
 
     private function createHttpRequest(string $action): HttpRequest
     {
-        $request = $this->createMock(HttpRequest::class);
-        $request->method('get')->with('some-trans-key')->willReturn($action);
+        $httpRequest = $this->createMock(HttpRequest::class);
+        $request = new InputBag(['some-trans-key' => $action]);
+        $httpRequest->request = $request;
 
-        return $request;
+        return $httpRequest;
     }
 }

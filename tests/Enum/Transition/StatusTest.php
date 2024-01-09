@@ -23,7 +23,7 @@ final class StatusTest extends TestCase
     /**
      * @return array<mixed>
      */
-    public function invalidStatusCombinationProvider(): array
+    public static function invalidStatusCombinationProvider(): array
     {
         return [
             'success and failure' => [

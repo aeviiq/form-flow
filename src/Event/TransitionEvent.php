@@ -1,13 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Event;
 
 final class TransitionEvent extends Event
 {
-    /**
-     * @var bool
-     */
-    private $blocked = false;
+    private bool $blocked = false;
 
     public function isTransitionBlocked(): bool
     {

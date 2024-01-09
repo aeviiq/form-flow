@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow;
 
@@ -17,43 +19,16 @@ final class FormFlow implements FormFlowInterface
     public const STORAGE_KEY_PREFIX = 'form_flow.storage.%s';
 
     /**
-     * @var StorageManagerInterface
+     * @param FormInterface[] $forms
      */
-    private $storageManager;
-
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
-
-    /**
-     * @var Definition
-     */
-    private $definition;
-
-    /**
-     * @var Context|null
-     */
-    private $context;
-
-    /**
-     * @var FormInterface[]
-     */
-    private $forms = [];
-
-    /**
-     * @var string|null
-     */
-    private $storageKey;
-
     public function __construct(
-        StorageManagerInterface $storageManager,
-        FormFactoryInterface $formFactory,
-        Definition $definition
+        private readonly StorageManagerInterface $storageManager,
+        private readonly FormFactoryInterface $formFactory,
+        private readonly Definition $definition,
+        private ?Context $context = null,
+        private array $forms = [],
+        private ?string $storageKey = null
     ) {
-        $this->storageManager = $storageManager;
-        $this->formFactory = $formFactory;
-        $this->definition = $definition;
     }
 
     public function isStarted(): bool
@@ -77,7 +52,7 @@ final class FormFlow implements FormFlowInterface
 
     public function getContext(): Context
     {
-        if (!$this->isStarted()) {
+        if (!$this->isStarted() || null === $this->context) {
             throw new LogicException('The flow is missing it\'s context. Did you FormFlow#start() the flow?');
         }
 
@@ -205,7 +180,7 @@ final class FormFlow implements FormFlowInterface
     public function setStorageKey(?string $storageKey): void
     {
         if (null !== $this->context) {
-            throw new LogicException(\sprintf('The storage key cannot be changed after the flow has context.'));
+            throw new LogicException('The storage key cannot be changed after the flow has context.');
         }
 
         $this->storageKey = $storageKey;
