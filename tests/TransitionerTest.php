@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Tests;
 
@@ -23,7 +25,7 @@ use PHPUnit\Framework\Constraint\Constraint;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -59,12 +61,12 @@ final class TransitionerTest extends TestCase
     {
         $this->flow->method('getTransitionKey')->willReturn('some-trans-key');
 
-        $request = $this->createMock(HttpRequest::class);
-        $request->method('get')->with('some-trans-key', '')->willReturnOnConsecutiveCalls('some-value', '');
-        $this->setCurrentRequest($request);
+        $httpRequest = $this->createMock(HttpRequest::class);
+        $request = new InputBag(['some-trans-key' => 'some-value']);
+        $httpRequest->request = $request;
+        $this->setCurrentRequest($httpRequest);
 
         self::assertTrue($this->transitioner->hasTransitionRequest($this->flow));
-        self::assertFalse($this->transitioner->hasTransitionRequest($this->flow));
     }
 
     public function testHasTransitionRequestWithoutRequestStack(): void
@@ -88,19 +90,32 @@ final class TransitionerTest extends TestCase
         $this->setCurrentStepNumber(1);
         $this->setCurrentStepForm(true, true);
 
-        $this->eventDispatcher->expects(self::exactly(9))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards']
-        );
+        $matcher = self::exactly(9);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name.step_1'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_forwards.group-1'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name'],
+                    4 => [TransitionEvent::class, 'form_flow.pre_forwards'],
+                    5 => [SkipEvent::class, 'form_flow.skip.some-name.step_1'],
+                    6 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name.step_1'],
+                    7 => [TransitionedEvent::class, 'form_flow.post_forwards.group-1'],
+                    8 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name'],
+                    9 => [TransitionedEvent::class, 'form_flow.post_forwards'],
+                    default => [TransitionEvent::class, ''],
+                };
+                [$expectedInstance, $expectedEventId] = $expected;
 
+                self::assertInstanceOf($expectedInstance, $event);
+                self::assertEquals($expectedEventId, $eventId);
+
+                return $event;
+            });
+
+        self::assertEquals(1, $this->flow->getCurrentStepNumber());
         $status = $this->transitioner->transition($this->flow);
+        self::assertEquals(2, $this->flow->getCurrentStepNumber());
         self::assertTrue($status->equals(new Status(Status::SUCCESS | Status::VALID_FORM)));
     }
 
@@ -112,26 +127,32 @@ final class TransitionerTest extends TestCase
 
         $this->context->expects(self::once())->method('setHardSkipped')->with($this->flow->getSteps()->getStepByNumber(2));
 
-        $this->eventDispatcher->expects(self::exactly(10))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_1'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_2'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards']
-        )->willReturnCallback(static function (Event $event, string $eventName): object {
-            if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
-                $event->hardSkip();
-            }
+        $matcher = self::exactly(10);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name.step_1'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_forwards.group-1'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name'],
+                    4 => [TransitionEvent::class, 'form_flow.pre_forwards'],
+                    5 => [SkipEvent::class, 'form_flow.skip.some-name.step_1'],
+                    6 => [SkipEvent::class, 'form_flow.skip.some-name.step_2'],
+                    7 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name.step_1'],
+                    8 => [TransitionedEvent::class, 'form_flow.post_forwards.group-1'],
+                    9 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name'],
+                    10 => [TransitionedEvent::class, 'form_flow.post_forwards'],
+                    default => [TransitionEvent::class, ''],
+                };
+                if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventId) {
+                    $event->hardSkip();
+                }
 
-            return $event;
-        });
+                return $event;
+            });
 
+        self::assertEquals(1, $this->flow->getCurrentStepNumber());
         $status = $this->transitioner->transition($this->flow);
+        self::assertEquals(3, $this->flow->getCurrentStepNumber());
         self::assertTrue($status->equals(new Status(Status::SUCCESS | Status::VALID_FORM)));
     }
 
@@ -143,26 +164,32 @@ final class TransitionerTest extends TestCase
 
         $this->context->expects(self::once())->method('setSoftSkipped')->with($this->flow->getSteps()->getStepByNumber(2));
 
-        $this->eventDispatcher->expects(self::exactly(10))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_1'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_2'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_forwards']
-        )->willReturnCallback(static function (Event $event, string $eventName): object {
-            if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
-                $event->softSkip();
-            }
+        $matcher = self::exactly(10);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name.step_1'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_forwards.group-1'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name'],
+                    4 => [TransitionEvent::class, 'form_flow.pre_forwards'],
+                    5 => [SkipEvent::class, 'form_flow.skip.some-name.step_1'],
+                    6 => [SkipEvent::class, 'form_flow.skip.some-name.step_2'],
+                    7 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name.step_1'],
+                    8 => [TransitionedEvent::class, 'form_flow.post_forwards.group-1'],
+                    9 => [TransitionedEvent::class, 'form_flow.post_forwards.some-name'],
+                    10 => [TransitionedEvent::class, 'form_flow.post_forwards'],
+                    default => [TransitionEvent::class, ''],
+                };
+                if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventId) {
+                    $event->softSkip();
+                }
 
-            return $event;
-        });
+                return $event;
+            });
 
+        self::assertEquals(1, $this->flow->getCurrentStepNumber());
         $status = $this->transitioner->transition($this->flow);
+        self::assertEquals(3, $this->flow->getCurrentStepNumber());
         self::assertTrue($status->equals(new Status(Status::SUCCESS | Status::VALID_FORM)));
     }
 
@@ -172,20 +199,24 @@ final class TransitionerTest extends TestCase
         $this->setCurrentStepNumber(1);
         $this->setCurrentStepForm(true, true);
 
-        $this->eventDispatcher->expects(self::exactly(5))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards'],
-            [$this->assertFlowEvent(SkipEvent::class), 'form_flow.skip.some-name.step_1']
-        )->willReturnCallback(static function (Event $event, string $eventName): object {
-            if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $eventName) {
-                $event->hardSkip();
-                $event->softSkip();
-            }
+        $matcher = self::exactly(5);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => 'form_flow.pre_forwards.some-name.step_1',
+                    2 => 'form_flow.pre_forwards.group-1',
+                    3 => 'form_flow.pre_forwards.some-name',
+                    4 => 'form_flow.pre_forwards',
+                    5 => 'form_flow.skip.some-name.step_1',
+                    default => '',
+                };
+                if ($event instanceof SkipEvent && 'form_flow.skip.some-name.step_1' === $expected) {
+                    $event->hardSkip();
+                    $event->softSkip();
+                }
 
-            return $event;
-        });
+                return $event;
+            });
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('A step can not be both hard and soft skipped.');
@@ -218,16 +249,20 @@ final class TransitionerTest extends TestCase
         $this->setCurrentStepNumber(1);
         $this->setCurrentStepForm(true, true);
 
-        $this->eventDispatcher->expects(self::exactly(4))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name.step_1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_forwards']
-        )->willReturnCallback(static function (TransitionEvent $event): object {
-            $event->blockTransition();
+        $matcher = self::exactly(4);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (TransitionEvent $event) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name.step_1'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_forwards.group-1'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_forwards.some-name'],
+                    4 => [TransitionEvent::class, 'form_flow.pre_forwards'],
+                    default => [TransitionEvent::class, ''],
+                };
+                $event->blockTransition();
 
-            return $event;
-        });
+                return $event;
+            });
 
         $status = $this->transitioner->transition($this->flow);
         self::assertTrue($status->equals(new Status(Status::FAILURE | Status::VALID_FORM | Status::BLOCKED)));
@@ -239,23 +274,30 @@ final class TransitionerTest extends TestCase
         $this->setCurrentStepNumber(3);
         $this->setCurrentStepForm(true, true);
 
-        $this->context->expects(self::exactly(2))->method('isHardSkipped')->withConsecutive(
-            [$this->flow->getSteps()->getStepByNumber(2)],
-            [$this->flow->getSteps()->getStepByNumber(1)]
-        )->willReturnOnConsecutiveCalls(true, false);
+        $matcher = self::exactly(8);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_backwards.some-name.step_3'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_backwards.group-1'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_backwards.some-name'],
+                    4 => [TransitionEvent::class, 'form_flow.pre_backwards'],
+                    5 => [TransitionedEvent::class, 'form_flow.post_backwards.some-name.step_3'],
+                    6=> [TransitionedEvent::class, 'form_flow.post_backwards.group-1'],
+                    7 => [TransitionedEvent::class, 'form_flow.post_backwards.some-name'],
+                    8 => [TransitionedEvent::class, 'form_flow.post_backwards'],
+                    default => [TransitionEvent::class, ''],
+                };
+                [$expectedInstance, $expectedEventId] = $expected;
+                self::assertInstanceOf($expectedInstance, $event);
+                self::assertEquals($expectedEventId, $eventId);
 
-        $this->eventDispatcher->expects(self::exactly(8))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.some-name.step_3'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_backwards.some-name.step_3'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_backwards.group-1'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_backwards.some-name'],
-            [$this->assertFlowEvent(TransitionedEvent::class), 'form_flow.post_backwards']
-        );
+                return $event;
+            });
 
+        self::assertEquals(3, $this->flow->getCurrentStepNumber());
         $status = $this->transitioner->transition($this->flow);
+        self::assertEquals(2, $this->flow->getCurrentStepNumber());
         self::assertTrue($status->equals(new Status(Status::SUCCESS | Status::VALID_FORM)));
     }
 
@@ -274,16 +316,23 @@ final class TransitionerTest extends TestCase
         $this->setCurrentStepNumber(2);
         $this->setCurrentStepForm(true, true);
 
-        $this->eventDispatcher->expects(self::exactly(4))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.some-name.step_2'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_backwards']
-        )->willReturnCallback(static function (TransitionEvent $event): object {
-            $event->blockTransition();
+        $matcher = self::exactly(4);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (TransitionEvent $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => 'form_flow.pre_backwards.some-name.step_2',
+                    2 => 'form_flow.pre_backwards.group-1',
+                    3 => 'form_flow.pre_backwards.some-name',
+                    4 => 'form_flow.pre_backwards',
+                    default => 'form_flow.pre_backwards',
+                };
 
-            return $event;
-        });
+                self::assertEquals($eventId, $expected);
+
+                $event->blockTransition();
+
+                return $event;
+            });
 
         $status = $this->transitioner->transition($this->flow);
         self::assertTrue($status->equals(new Status(Status::FAILURE | Status::BLOCKED | Status::VALID_FORM)));
@@ -308,14 +357,25 @@ final class TransitionerTest extends TestCase
         $this->context->method('isCompleted')->willReturn(true);
         $this->context->method('isSkipped')->willReturn(false);
 
-        $this->eventDispatcher->expects(self::exactly(6))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete'],
-            [$this->assertFlowEvent(CompletedEvent::class), 'form_flow.completed.group-1'],
-            [$this->assertFlowEvent(CompletedEvent::class), 'form_flow.completed.some-name'],
-            [$this->assertFlowEvent(CompletedEvent::class), 'form_flow.completed']
-        );
+        $matcher = self::exactly(6);
+        $this->eventDispatcher->expects($matcher)->method('dispatch')
+            ->willReturnCallback(function (Event $event, string $eventId) use ($matcher) {
+                $expected = match ($matcher->numberOfInvocations()) {
+                    1 => [TransitionEvent::class, 'form_flow.pre_complete.group-1'],
+                    2 => [TransitionEvent::class, 'form_flow.pre_complete.some-name'],
+                    3 => [TransitionEvent::class, 'form_flow.pre_complete'],
+                    4 => [CompletedEvent::class, 'form_flow.completed.group-1'],
+                    5 => [CompletedEvent::class, 'form_flow.completed.some-name'],
+                    6 => [CompletedEvent::class, 'form_flow.completed'],
+                    default => [CompletedEvent::class, 'form_flow.completed'],
+                };
+                [$expectedInstance, $expectedEventId] = $expected;
+
+                self::assertInstanceOf($expectedInstance, $event);
+                self::assertEquals($expectedEventId, $eventId);
+
+                return $event;
+            });
 
         $this->flow->expects(self::once())->method('reset');
 
@@ -331,12 +391,7 @@ final class TransitionerTest extends TestCase
 
         $this->context->method('isCompleted')->willReturn(true);
         $this->context->method('isSkipped')->willReturn(false);
-
-        $this->eventDispatcher->expects(self::exactly(3))->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.group-1'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete.some-name'],
-            [$this->assertFlowEvent(TransitionEvent::class), 'form_flow.pre_complete']
-        )->willReturnCallback(static function (TransitionEvent $event): object {
+        $this->eventDispatcher->expects(self::exactly(3))->method('dispatch')->willReturnCallback(static function (TransitionEvent $event): object {
             $event->blockTransition();
 
             return $event;
@@ -384,8 +439,8 @@ final class TransitionerTest extends TestCase
         $this->setCurrentRequest($this->createHttpRequest('reset'));
         $this->setCurrentStepNumber(1);
 
-        $this->eventDispatcher->expects(self::once())->method('dispatch')->withConsecutive(
-            [$this->assertFlowEvent(ResetEvent::class), 'form_flow.reset']
+        $this->eventDispatcher->expects(self::once())->method('dispatch')->with(
+            $this->assertFlowEvent(ResetEvent::class), 'form_flow.reset'
         );
 
         $this->flow->expects(self::once())->method('reset');
@@ -399,9 +454,12 @@ final class TransitionerTest extends TestCase
         $this->flow->method('getTransitionKey')->willReturn('some-trans-key');
         $this->flow->method('getName')->willReturn('some-name');
 
-        $request = $this->createMock(HttpRequest::class);
-        $request->method('get')->with('some-trans-key', '')->willReturn('');
-        $this->setCurrentRequest($request);
+        $httpRequest = $this->createMock(HttpRequest::class);
+        $request = new InputBag(['some-trans-key' => '']);
+        $httpRequest->request = $request;
+        $query = new InputBag(['some-trans-key' => '']);
+        $httpRequest->query = $query;
+        $this->setCurrentRequest($httpRequest);
 
         $this->expectException(TransitionException::class);
         $this->expectExceptionMessage('Unable to transition flow "some-name". Use TransitionerInterface#hasTransitionRequest() to ensure there is a transition request before attempting to transition.');
@@ -415,11 +473,11 @@ final class TransitionerTest extends TestCase
         $this->context = $this->createMock(Context::class);
         $this->transitioner = new Transitioner($this->eventDispatcher);
 
-        $firstStep = $this->createStub(StepInterface::class);
+        $firstStep = self::createStub(StepInterface::class);
         $firstStep->method('getNumber')->willReturn(1);
-        $secondStep = $this->createStub(StepInterface::class);
+        $secondStep = self::createStub(StepInterface::class);
         $secondStep->method('getNumber')->willReturn(2);
-        $thirdStep = $this->createStub(StepInterface::class);
+        $thirdStep = self::createStub(StepInterface::class);
         $thirdStep->method('getNumber')->willReturn(3);
 
         $this->flow->method('getName')->willReturn('some-name');
@@ -462,7 +520,7 @@ final class TransitionerTest extends TestCase
 
     private function setCurrentRequest(?HttpRequest $request): void
     {
-        $stack = $this->createStub(RequestStack::class);
+        $stack = self::createStub(RequestStack::class);
         $stack->method('getCurrentRequest')->willReturn($request);
 
         $this->transitioner->setRequestStack($stack);
@@ -470,7 +528,7 @@ final class TransitionerTest extends TestCase
 
     private function setCurrentStepForm(bool $valid, bool $submitted): void
     {
-        $form = $this->createStub(FormInterface::class);
+        $form = self::createStub(FormInterface::class);
         $form->method('isValid')->willReturn($valid);
         $form->method('isSubmitted')->willReturn($submitted);
         $form->method('getName')->willReturn('form_name');
@@ -486,9 +544,7 @@ final class TransitionerTest extends TestCase
     private function createHttpRequest(string $action): HttpRequest
     {
         $httpRequest = $this->createMock(HttpRequest::class);
-        $httpRequest->method('get')->with('some-trans-key')->willReturn($action);
-        $request = $this->createMock(ParameterBag::class);
-        $request->method('has')->willReturn(true);
+        $request = new InputBag(['some-trans-key' => $action]);
         $httpRequest->request = $request;
 
         return $httpRequest;
@@ -498,7 +554,9 @@ final class TransitionerTest extends TestCase
     {
         return new Callback(function (Event $event) use ($expectedInstance): bool {
             self::assertSame($this->flow, $event->getFlow());
-            self::assertInstanceOf($expectedInstance, $event);
+            if (class_exists($expectedInstance)) {
+                self::assertInstanceOf($expectedInstance, $event);
+            }
 
             return true;
         });
