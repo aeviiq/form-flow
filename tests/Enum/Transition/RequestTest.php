@@ -10,6 +10,7 @@ use Aeviiq\FormFlow\FormFlowInterface;
 use Aeviiq\FormFlow\Step\StepCollection;
 use Aeviiq\FormFlow\Step\StepInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
 final class RequestTest extends TestCase
@@ -90,19 +91,19 @@ final class RequestTest extends TestCase
         $httpRequest = $this->createHttpRequest('another_1');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('"another_1" is an invalid transition request for flow "some-name".');
+        $this->expectExceptionMessage('Invalid transition request for flow "some-name".');
         Request::createByHttpRequestAndFlow($httpRequest, $flow);
     }
 
     private function createFlow(int $currentStep): FormFlowInterface
     {
-        $flow = $this->createStub(FormFlowInterface::class);
+        $flow = self::createStub(FormFlowInterface::class);
         $flow->method('getName')->willReturn('some-name');
         $flow->method('getCurrentStepNumber')->willReturn($currentStep);
         $flow->method('getTransitionKey')->willReturn('some-trans-key');
         $flow->method('getSteps')->willReturn(new StepCollection([
-            $this->createStub(StepInterface::class),
-            $this->createStub(StepInterface::class),
+            self::createStub(StepInterface::class),
+            self::createStub(StepInterface::class),
         ]));
 
         return $flow;
@@ -110,9 +111,10 @@ final class RequestTest extends TestCase
 
     private function createHttpRequest(string $action): HttpRequest
     {
-        $request = $this->createMock(HttpRequest::class);
-        $request->method('get')->with('some-trans-key')->willReturn($action);
+        $httpRequest = $this->createMock(HttpRequest::class);
+        $request = new InputBag(['some-trans-key' => $action]);
+        $httpRequest->request = $request;
 
-        return $request;
+        return $httpRequest;
     }
 }

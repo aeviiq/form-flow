@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Step;
 
@@ -8,39 +10,14 @@ use Symfony\Component\Form\FormTypeInterface;
 final class Step implements StepInterface
 {
     /**
-     * @var int
-     */
-    private $number;
-
-    /**
-     * @var string
-     */
-    private $formType;
-
-    /**
-     * @var string
-     */
-    private $label;
-
-    /**
-     * @var string
-     */
-    private $nextLabel;
-
-    /**
-     * @var string
-     */
-    private $previousLabel;
-
-    /**
      * @throws InvalidArgumentException When any of the given parameters are invalid.
      */
     public function __construct(
-        int $number,
-        string $formType,
-        string $label,
-        string $nextLabel,
-        string $previousLabel
+        private readonly int $number,
+        private readonly string $formType,
+        private readonly string $label,
+        private readonly string $nextLabel,
+        private readonly string $previousLabel
     ) {
         if ($number < 1) {
             throw new InvalidArgumentException(\sprintf('The number must be above 0. "%d" given.', $number));
@@ -61,12 +38,6 @@ final class Step implements StepInterface
         if ('' === $previousLabel) {
             throw new InvalidArgumentException('The previous label cannot be empty.');
         }
-
-        $this->number = $number;
-        $this->formType = $formType;
-        $this->label = $label;
-        $this->nextLabel = $nextLabel;
-        $this->previousLabel = $previousLabel;
     }
 
     public function getNumber(): int

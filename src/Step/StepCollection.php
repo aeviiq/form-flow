@@ -1,13 +1,17 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Step;
 
 use Aeviiq\Collection\ImmutableObjectCollection;
 
 /**
- * @method \ArrayIterator|StepInterface[] getIterator
- * @method StepInterface|null first
- * @method StepInterface|null last
+ * @phpstan-extends ImmutableObjectCollection<int|string, StepInterface>
+ *
+ * @method StepInterface|null first()
+ * @method StepInterface|null last()
+ * @method self filter(\Closure $closure)
  */
 final class StepCollection extends ImmutableObjectCollection
 {

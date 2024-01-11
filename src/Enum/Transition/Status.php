@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Enum\Transition;
 
@@ -23,44 +25,45 @@ final class Status extends AbstractFlag
 
     public const UNHANDLED_FORM = 128;
 
-    /**
-     * @throws InvalidArgumentException When the given value contains an invalid flag combination.
-     */
-    public function __construct(int $value)
+    public static function isValid(int $value): bool
     {
-        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::FAILURE)) {
+        if (!parent::isValid($value)) {
+            return false;
+        }
+
+        if (self::isFlagSet($value, self::SUCCESS) && self::isFlagSet($value, self::FAILURE)) {
             throw new InvalidArgumentException('A transition status can not be successful and failure at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::BLOCKED)) {
+        if (self::isFlagSet($value, self::SUCCESS) && self::isFlagSet($value, self::BLOCKED)) {
             throw new InvalidArgumentException('A transition status can not be successful and blocked at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::SUCCESS) && $this->isFlagSet($value, self::INVALID_FORM)) {
+        if (self::isFlagSet($value, self::SUCCESS) && self::isFlagSet($value, self::INVALID_FORM)) {
             throw new InvalidArgumentException('A transition status can not be successful and invalid form at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::COMPLETED) && $this->isFlagSet($value, self::FAILURE)) {
+        if (self::isFlagSet($value, self::COMPLETED) && self::isFlagSet($value, self::FAILURE)) {
             throw new InvalidArgumentException('A transition status can not be completed and failure at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::COMPLETED) && $this->isFlagSet($value, self::INVALID_FORM)) {
+        if (self::isFlagSet($value, self::COMPLETED) && self::isFlagSet($value, self::INVALID_FORM)) {
             throw new InvalidArgumentException('A transition status can not be completed and invalid form at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::VALID_FORM) && $this->isFlagSet($value, self::INVALID_FORM)) {
+        if (self::isFlagSet($value, self::VALID_FORM) && self::isFlagSet($value, self::INVALID_FORM)) {
             throw new InvalidArgumentException('A transition status can not be valid form and invalid form at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::VALID_FORM) && $this->isFlagSet($value, self::UNHANDLED_FORM)) {
+        if (self::isFlagSet($value, self::VALID_FORM) && self::isFlagSet($value, self::UNHANDLED_FORM)) {
             throw new InvalidArgumentException('A transition status can not be valid form and unhandled form at the same time.');
         }
 
-        if ($this->isFlagSet($value, self::INVALID_FORM) && $this->isFlagSet($value, self::UNHANDLED_FORM)) {
+        if (self::isFlagSet($value, self::INVALID_FORM) && self::isFlagSet($value, self::UNHANDLED_FORM)) {
             throw new InvalidArgumentException('A transition status can not be invalid form and unhandled form at the same time.');
         }
 
-        parent::__construct($value);
+        return true;
     }
 
     public function isSuccessful(): bool
@@ -98,7 +101,7 @@ final class Status extends AbstractFlag
         return $this->contains(new self(self::UNHANDLED_FORM));
     }
 
-    private function isFlagSet(int $flags, int $flag): bool
+    private static function isFlagSet(int $flags, int $flag): bool
     {
         return ($flag & $flags) === $flag;
     }

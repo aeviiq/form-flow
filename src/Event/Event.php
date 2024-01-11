@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Event;
 
@@ -7,14 +9,8 @@ use Symfony\Contracts\EventDispatcher\Event as BaseEvent;
 
 class Event extends BaseEvent
 {
-    /**
-     * @var FormFlowInterface
-     */
-    private $flow;
-
-    public function __construct(FormFlowInterface $flow)
+    public function __construct(private readonly FormFlowInterface $flow)
     {
-        $this->flow = $flow;
     }
 
     public function getFlow(): FormFlowInterface

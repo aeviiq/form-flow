@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow;
 
@@ -11,29 +13,16 @@ final class Definition
     public const DEFAULT_GROUP = 'Default';
 
     /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var string The instance that the data for this definition is expected to be.
-     */
-    private $expectedInstance;
-
-    /**
-     * @var StepCollection
-     */
-    private $steps;
-
-    /**
      * @var StringCollection
      */
-    private $groups;
+    private StringCollection $groups;
 
     /**
+     * @param array<int, string> $groups
+     *
      * @throws InvalidArgumentException When any of the given parameters is invalid.
      */
-    public function __construct(string $name, string $expectedInstance, StepCollection $steps, array $groups = [self::DEFAULT_GROUP])
+    public function __construct(private readonly string $name, private readonly string $expectedInstance, private readonly StepCollection $steps, array $groups = [self::DEFAULT_GROUP])
     {
         if ('' === $name) {
             throw new InvalidArgumentException('The definition name cannot be empty.');
@@ -47,9 +36,6 @@ final class Definition
             throw new InvalidArgumentException('A flow must consist of at least 2 steps.');
         }
 
-        $this->name = $name;
-        $this->steps = $steps;
-        $this->expectedInstance = $expectedInstance;
         $this->groups = new StringCollection($groups);
     }
 

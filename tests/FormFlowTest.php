@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow\Tests;
 
@@ -38,7 +40,7 @@ final class FormFlowTest extends TestCase
             ->with('form_flow.storage.form_flow')->willReturn(true);
 
         $this->mockedStorageManager->expects(self::once())->method('load')
-            ->with('form_flow.storage.form_flow')->willReturn($this->createStub(Context::class));
+            ->with('form_flow.storage.form_flow')->willReturn(self::createStub(Context::class));
 
         $flow = $this->createDefaultFormFlow();
         self::assertTrue($flow->isStarted());
@@ -63,7 +65,7 @@ final class FormFlowTest extends TestCase
         $flow->start(new stdClass());
 
         $this->expectException(LogicException::class);
-        $this->expectDeprecationMessage('The flow is already started. In order to start it again, you need to reset() it.');
+        $this->expectExceptionMessage('The flow is already started. In order to start it again, you need to reset() it.');
         $flow->start(new stdClass());
     }
 
@@ -136,7 +138,7 @@ final class FormFlowTest extends TestCase
         $flow = $this->createDefaultFormFlow();
 
         $flow->start($data);
-        $form = $this->createStub(FormInterface::class);
+        $form = self::createStub(FormInterface::class);
         $this->mockedFormFactory->expects(self::once())->method('create')->with('', $data)->willReturn($form);
         self::assertSame($form, $flow->getCurrentStepForm());
         $flow->reset();
@@ -160,6 +162,7 @@ final class FormFlowTest extends TestCase
         $step1->method('getNumber')->willReturn(1);
         $step2 = $this->createMock(StepInterface::class);
         $step2->method('getNumber')->willReturn(2);
+        $steps = [];
         $steps[] = $step1;
         $steps[] = $step2;
         $flow = $this->createStartedValidFormFlow(new Definition('form_flow', stdClass::class, new StepCollection($steps)));
@@ -215,6 +218,7 @@ final class FormFlowTest extends TestCase
         $step1->method('getNumber')->willReturn(1);
         $step2 = $this->createMock(StepInterface::class);
         $step2->method('getNumber')->willReturn(2);
+        $steps = [];
         $steps[] = $step1;
         $steps[] = $step2;
         $flow = $this->createStartedValidFormFlowOnFinalStep(new Definition('form_flow', stdClass::class, new StepCollection($steps)));
@@ -261,6 +265,7 @@ final class FormFlowTest extends TestCase
         $step2->method('getNumber')->willReturn(2);
         $step3 = $this->createMock(StepInterface::class);
         $step3->method('getNumber')->willReturn(3);
+        $steps = [];
         $steps[] = $step1;
         $steps[] = $step2;
         $steps[] = $step3;
@@ -276,6 +281,7 @@ final class FormFlowTest extends TestCase
         $step2->method('getNumber')->willReturn(2);
         $step3 = $this->createMock(StepInterface::class);
         $step3->method('getNumber')->willReturn(3);
+        $steps = [];
         $steps[] = $step1;
         $steps[] = $step2;
         $steps[] = $step3;
@@ -294,7 +300,7 @@ final class FormFlowTest extends TestCase
         $flow = $this->createDefaultFormFlow();
 
         $flow->start($data);
-        $form = $this->createStub(FormInterface::class);
+        $form = self::createStub(FormInterface::class);
         $this->mockedFormFactory->expects(self::once())->method('create')->with('', $data)->willReturn($form);
         self::assertSame($form, $flow->getFormByStepNumber(1));
         $flow->reset();
@@ -307,11 +313,11 @@ final class FormFlowTest extends TestCase
     public function testGetStorageKey(): void
     {
         $flow = $this->createDefaultFormFlow();
-        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
+        self::assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
         $flow->setStorageKey('12345');
-        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX . '.%s', $flow->getName(), '12345'), $flow->getStorageKey());
+        self::assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX . '.%s', $flow->getName(), '12345'), $flow->getStorageKey());
         $flow->setStorageKey(null);
-        $this->assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
+        self::assertSame(\sprintf(FormFlow::STORAGE_KEY_PREFIX, $flow->getName()), $flow->getStorageKey());
     }
 
     public function testGetStorageKeyWithContextPresent(): void
@@ -329,12 +335,15 @@ final class FormFlowTest extends TestCase
         $this->mockedFormFactory = $this->createMock(FormFactoryInterface::class);
     }
 
+    /**
+     * @param array<int, MockObject|Stepinterface> $steps
+     */
     private function createDefinition(
         array $steps = [],
         string $expectedInstance = stdClass::class,
         string $name = 'form_flow'
     ): Definition {
-        if (empty($steps)) {
+        if (count($steps) <= 0) {
             $step1 = $this->createMock(StepInterface::class);
             $step1->method('getNumber')->willReturn(1);
             $steps[] = $step1;

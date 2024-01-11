@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Aeviiq\FormFlow;
 
@@ -19,19 +21,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class Transitioner implements TransitionerInterface, RequestStackAwareInterface
 {
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $dispatcher;
-
-    public function __construct(EventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
+    public function __construct(
+        private readonly EventDispatcherInterface $dispatcher,
+        private ?RequestStack $requestStack = null
+    ) {
     }
 
     /**
@@ -39,7 +32,13 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
      */
     public function hasTransitionRequest(FormFlowInterface $flow): bool
     {
-        return '' !== $this->getHttpRequest()->get($flow->getTransitionKey(), '');
+        $httpRequest = $this->getHttpRequest();
+        $transitionRequest = $httpRequest->request->get($flow->getTransitionKey(), '');
+        if ('' === $transitionRequest) {
+            $transitionRequest = $httpRequest->query->get($flow->getTransitionKey(), '');
+        }
+
+        return '' !== $transitionRequest;
     }
 
     /**
@@ -244,6 +243,7 @@ final class Transitioner implements TransitionerInterface, RequestStackAwareInte
             $this->dispatcher->dispatch($event, $this->createStepListenerId($eventName, $flow, $currentStepNumber));
         }
 
+        /** @var string $group */
         foreach ($flow->getGroups() as $group) {
             $this->dispatcher->dispatch($event, $this->createGroupListenerId($eventName, $group));
         }
