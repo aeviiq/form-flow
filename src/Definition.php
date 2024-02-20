@@ -12,9 +12,6 @@ final class Definition
 {
     public const DEFAULT_GROUP = 'Default';
 
-    /**
-     * @var StringCollection
-     */
     private StringCollection $groups;
 
     /**
