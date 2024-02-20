@@ -11,13 +11,15 @@ use Aeviiq\FormFlow\Step\StepInterface;
 class Context
 {
     /**
+     * Do not add readonly to these properties until https://github.com/myclabs/DeepCopy/issues/174 is fixed.
+     *
      * @param array<int, bool> $completedSteps
      * @param array<int, bool> $softSkippedSteps
      * @param array<int, bool> $hardSkippedSteps
      */
     public function __construct(
         private object $data,
-        private readonly int $totalNumberOfSteps,
+        private int $totalNumberOfSteps,
         private int $currentStepNumber = 1,
         private array $completedSteps = [],
         private array $softSkippedSteps = [],
