@@ -16,7 +16,7 @@ class Context
      * @param array<int, bool> $hardSkippedSteps
      */
     public function __construct(
-        private readonly object $data,
+        private object $data,
         private readonly int $totalNumberOfSteps,
         private int $currentStepNumber = 1,
         private array $completedSteps = [],
